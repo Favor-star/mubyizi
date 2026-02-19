@@ -1,0 +1,19 @@
+{
+  "extends": "@workspace/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "outDir": "./dist"
+  },
+  "exclude": ["node_modules"]
+}
