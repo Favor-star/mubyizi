@@ -1,0 +1,122 @@
+
+// ── USERS ────────────────────────────────────────────────────
+
+model Users {
+    id   String @id @default(ulid())
+    name String
+
+    // Occupation — now generic enough for any industry
+    occupation         String?            // Free-text job title
+    occupationCategory JobCategory?       // Structured category
+    skillLevel         SkillLevel?        @default(ENTRY)
+
+    systemRole   SystemRole @default(USER)
+    phoneNumber  String?
+    email        String?    @unique
+    profileImage String?
+
+    // Wage
+    wageId    String?
+    dailyWage Wage?   @relation(fields: [wageId], references: [id])
+
+    // Relationships
+    attendance    Attendance[]
+    workplaces    UsersOnWorkplaces[] @relation("UserAssignments")
+    assignedByMe  UsersOnWorkplaces[] @relation("AssignedByUser")
+    organizations OrgMembership[]
+    payments      Payment[]
+    earnings      WorkerEarnings[]
+
+    // Audit
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    lastLoginAt DateTime?
+
+    @@index([email])
+    @@index([systemRole])
+    @@index([occupationCategory])
+}
+
+// ── ENUMS: USERS ─────────────────────────────────────────────
+
+// Replaces OccupationCategory. Covers common daily-rate roles
+// across industries; orgs can use the free-text `occupation`
+// field for more specific titles.
+enum JobCategory {
+    // Trades & technical
+    SKILLED_TRADESPERSON  // Electrician, plumber, welder, mason, etc.
+    GENERAL_LABORER
+    MACHINE_OPERATOR      // Heavy equipment, forklift, factory line
+    DRIVER_OR_COURIER
+    TECHNICIAN
+
+    // Supervisory
+    TEAM_LEADER
+    SUPERVISOR
+    FOREMAN_OR_FOREWOMAN
+
+    // Professional / technical
+    ENGINEER
+    TECHNOLOGIST
+    SURVEYOR_OR_INSPECTOR
+
+    // Service & support
+    SECURITY_GUARD
+    CLEANER_OR_JANITOR
+    CATERING_OR_HOSPITALITY
+    HEALTHCARE_AIDE
+    RETAIL_ASSISTANT
+
+    // Administrative
+    ADMINISTRATIVE_STAFF
+
+    OTHER
+}
+
+enum SkillLevel {
+    ENTRY           // Trainee / apprentice / new hire
+    JUNIOR          // Some experience, still supervised
+    INTERMEDIATE    // Works independently
+    SENIOR          // Experienced, can guide others
+    LEAD            // Leads a small team
+    SPECIALIST      // Deep expertise in a narrow area
+    SUPERVISOR      // Formal supervisory responsibility
+}
+
+enum SystemRole {
+    SUPERADMIN // Full platform access, bypasses all checks
+    SUPPORT    // Read-only access to all organisations
+    USER       // Regular user, access based on org membership
+}
+
+// ── WORKPLACE ROLES ──────────────────────────────────────────
+
+// Replaces SiteRole. Generic enough for any workplace type.
+enum WorkplaceRole {
+    WORKPLACE_MANAGER // Full workplace control, budget management
+    SUPERVISOR        // Team leadership, task assignment
+    WORKER            // Standard worker access
+    VISITOR           // Temporary / limited access
+}
+
+model UsersOnWorkplaces {
+    user   Users  @relation("UserAssignments", fields: [userId], references: [id], onDelete: Cascade)
+    userId String
+
+    workplace   Workplace @relation(fields: [workplaceId], references: [id], onDelete: Cascade)
+    workplaceId String
+
+    workplaceRole WorkplaceRole @default(WORKER)
+
+    assignedBy   Users  @relation("AssignedByUser", fields: [assignedById], references: [id])
+    assignedById String
+
+    isActive  Boolean   @default(true)
+    assignedAt DateTime  @default(now())
+    removedAt  DateTime?
+
+    @@id([userId, workplaceId])
+    @@index([userId, isActive])
+    @@index([workplaceId, workplaceRole])
+    @@index([workplaceRole])
+}

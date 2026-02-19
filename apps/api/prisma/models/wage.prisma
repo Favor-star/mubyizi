@@ -1,0 +1,23 @@
+
+// ── WAGE ─────────────────────────────────────────────────────
+
+model Wage {
+    id       String     @id @default(ulid())
+    value    Float
+    currency String     @default("USD")
+    period   WagePeriod @default(DAILY)
+
+    users Users[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([currency])
+}
+
+enum WagePeriod {
+    HOURLY
+    DAILY
+    WEEKLY
+    MONTHLY
+}

@@ -1,0 +1,139 @@
+
+
+// ── PAYMENT ──────────────────────────────────────────────────
+
+model Payment {
+    id String @id @default(ulid())
+
+    amount      Float
+    currency    String   @default("USD")
+    paymentDate DateTime
+    periodStart DateTime
+    periodEnd   DateTime
+
+    method PaymentMethod
+    status PaymentStatus @default(PENDING)
+
+    user   Users  @relation(fields: [userId], references: [id])
+    userId String
+
+    workplace   Workplace? @relation(fields: [workplaceId], references: [id])
+    workplaceId String?
+    org         Org        @relation(fields: [orgId], references: [id])
+    orgId       String
+
+    notes          String?
+    receiptUrl     String?
+    transactionRef String? @unique
+
+    approvedBy String?
+    approvedAt DateTime?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([userId, paymentDate])
+    @@index([workplaceId, paymentDate])
+    @@index([orgId, status])
+    @@index([status])
+}
+
+enum PaymentMethod {
+    CASH
+    BANK_TRANSFER
+    MOBILE_MONEY
+    CHEQUE
+    DIGITAL_WALLET
+}
+
+enum PaymentStatus {
+    PENDING
+    PROCESSING
+    COMPLETED
+    FAILED
+    CANCELLED
+}
+
+// ── EXPENSE ──────────────────────────────────────────────────
+
+model Expense {
+    id String @id @default(ulid())
+
+    amount      Float
+    currency    String          @default("USD")
+    category    ExpenseCategory
+    description String
+    date        DateTime
+
+    receiptUrl String?
+    receiptNo  String?
+
+    workplace   Workplace? @relation(fields: [workplaceId], references: [id])
+    workplaceId String?
+    org         Org        @relation(fields: [orgId], references: [id])
+    orgId       String
+
+    recordedBy String   // userId
+    approvedBy String?
+    approvedAt DateTime?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([workplaceId, date])
+    @@index([orgId, category])
+    @@index([date])
+}
+
+// Generalised from construction-only to cover all industries
+enum ExpenseCategory {
+    LABOR           // Worker wages / payments
+    MATERIALS       // Raw materials, consumables, stock
+    EQUIPMENT       // Tools, machinery, vehicle hire
+    TRANSPORT       // Fuel, logistics, courier
+    UTILITIES       // Power, water, internet, phone
+    PERMITS_AND_COMPLIANCE // Licences, inspections, certifications
+    SUBCONTRACTORS  // Third-party contracted work
+    CATERING        // Meals, refreshments for workers
+    SAFETY          // PPE, safety equipment, training
+    MARKETING       // Applicable for events, retail, etc.
+    ADMINISTRATIVE  // Office supplies, software, admin costs
+    OTHER
+}
+
+// ── WORKER EARNINGS (CACHED) ──────────────────────────────────
+
+model WorkerEarnings {
+    id String @id @default(ulid())
+
+    user   Users  @relation(fields: [userId], references: [id])
+    userId String
+
+    workplace   Workplace? @relation(fields: [workplaceId], references: [id])
+    workplaceId String?
+
+    org   Org    @relation(fields: [orgId], references: [id])
+    orgId String
+
+    // Period
+    month Int // 1-12
+    year  Int
+
+    // Earnings
+    daysWorked  Int   @default(0)
+    hoursWorked Float @default(0)
+    totalEarned Float @default(0)
+    totalPaid   Float @default(0)
+    balance     Float @default(0)
+
+    currency String @default("USD")
+
+    lastCalculated DateTime @default(now())
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+
+    @@unique([userId, orgId, workplaceId, month, year])
+    @@index([userId, year, month])
+    @@index([workplaceId, year, month])
+    @@index([orgId, year, month])
+}

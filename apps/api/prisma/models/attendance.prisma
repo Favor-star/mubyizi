@@ -1,0 +1,53 @@
+
+// ── ATTENDANCE ───────────────────────────────────────────────
+
+model Attendance {
+    id     String           @id @default(ulid())
+    date   DateTime
+    status AttendanceStatus @default(NOT_MARKED)
+
+    user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String
+
+    workplace   Workplace? @relation(fields: [workplaceId], references: [id])
+    workplaceId String?
+
+    // Time tracking
+    checkIn     DateTime?
+    checkOut    DateTime?
+    hoursWorked Float?
+
+    // Shift / schedule context (useful for non-construction orgs)
+    shiftLabel  String?  // e.g. "Morning", "Night", "Harvest Run #3"
+
+    // Payment tracking
+    dailyRate    Float?
+    amountEarned Float?
+    isPaid       Boolean   @default(false)
+    paidAt       DateTime?
+    paymentId    String?
+
+    // Notes & approval
+    notes      String?
+    approvedBy String?   // userId of approver
+    approvedAt DateTime?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([userId, date, workplaceId])
+    @@index([userId, date])
+    @@index([workplaceId, date])
+    @@index([status])
+    @@index([isPaid])
+}
+
+enum AttendanceStatus {
+    NOT_MARKED
+    PRESENT
+    ABSENT
+    HALF_DAY
+    LATE
+    ON_LEAVE
+    SICK
+}

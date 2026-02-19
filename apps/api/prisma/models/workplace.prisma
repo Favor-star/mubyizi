@@ -1,0 +1,86 @@
+// ============================================================
+// GENERALIZED DAILY-RATE WORKFORCE MANAGEMENT SCHEMA
+// Works for construction, agriculture, events, logistics,
+// manufacturing, cleaning, security, and any other industry
+// that employs daily-rate or shift-based workers.
+// ============================================================
+
+// ── WORKPLACE ────────────────────────────────────────────────
+// Replaces "Site". A Workplace is any location or project
+// where workers are deployed — construction site, farm,
+// warehouse, event venue, factory floor, etc.
+
+model Workplace {
+    id          String          @id @default(ulid())
+    name        String
+    type        WorkplaceType   @default(PROJECT)
+    location    String?
+    description String?
+    address     String?
+    coordinates String?
+    status      WorkplaceStatus @default(NOT_STARTED)
+
+    // Images
+    images WorkplaceImage[]
+
+    // Dates
+    startDate DateTime?
+    endDate   DateTime?
+
+    // Budget
+    budget         Budget?   @relation(fields: [budgetId], references: [id])
+    budgetId       String?
+    totalSpent     Float     @default(0) // Cached total
+    laborCost      Float     @default(0) // Cached labor cost
+    lastCalculated DateTime?
+
+    // Relationships
+    org        Org                  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+    orgId      String
+    workers    UsersOnWorkplaces[]
+    attendance Attendance[]
+    payments   Payment[]
+    expenses   Expense[]
+    earnings   WorkerEarnings[]
+
+    // Audit
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([orgId, status])
+    @@index([status])
+    @@index([type])
+}
+
+model WorkplaceImage {
+    id          String  @id @default(ulid())
+    image       String
+    description String?
+
+    workplace   Workplace @relation(fields: [workplaceId], references: [id], onDelete: Cascade)
+    workplaceId String
+
+    uploadedBy String?  // userId
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+
+    @@index([workplaceId])
+}
+
+enum WorkplaceType {
+    PROJECT       // Time-bound project (construction, event)
+    FACILITY      // Ongoing facility (factory, warehouse, office)
+    FIELD         // Agricultural or outdoor field work
+    VENUE         // Event or hospitality venue
+    ROUTE         // Delivery or transport route
+    OTHER
+    
+}
+
+enum WorkplaceStatus {
+    NOT_STARTED
+    ACTIVE
+    ON_HOLD
+    COMPLETED
+    CANCELLED
+}

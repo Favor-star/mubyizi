@@ -1,0 +1,24 @@
+
+
+// ── BUDGET ───────────────────────────────────────────────────
+
+model Budget {
+    id       String @id @default(ulid())
+    planned  Float
+    consumed Float  @default(0)
+    currency String @default("USD")
+
+    workplaces Workplace[]
+
+    // Optional breakdown
+    labor     Float?
+    materials Float?
+    equipment Float?
+    overhead  Float? // Renamed from "other" for clarity
+    other     Float?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([currency])
+}

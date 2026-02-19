@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import usersRoutes from "./users.route.js";
+import usersRoutes from "./orgs.route.js";
 
-const routes = new Hono().route("/users", usersRoutes);
+const routes = new Hono().route("/orgs", usersRoutes);
 
 export default routes;

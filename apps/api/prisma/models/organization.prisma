@@ -1,0 +1,97 @@
+
+// ── ORGANISATION ─────────────────────────────────────────────
+
+model Org {
+    id       String    @id @default(ulid())
+    name     String
+    type     OrgType   @default(COMPANY)
+    industry Industry  @default(OTHER) // NEW — what sector is this org in?
+    status   OrgStatus @default(ACTIVE)
+
+    // Organisation details
+    description String?
+    website     String?
+    addressLine String?
+    city        String?
+    country     String?
+    timezone    String?  @default("UTC")
+    logoUrl     String?
+    images      String[]
+
+    workplaces     Workplace[]
+    members        OrgMembership[]
+    expenses       Expense[]
+    payments       Payment[]
+    workerEarnings WorkerEarnings[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([status])
+    @@index([type])
+    @@index([industry])
+}
+
+model OrgMembership {
+    org   Org    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+    orgId String
+
+    user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String
+
+    role     OrgRole
+    isActive Boolean @default(true)
+
+    invitedBy String?
+    invitedAt DateTime?
+
+    joinedAt   DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    lastSeenAt DateTime?
+
+    @@id([orgId, userId])
+    @@index([userId, role])
+    @@index([orgId, role])
+    @@index([isActive])
+}
+
+// ── ENUMS: ORG ───────────────────────────────────────────────
+
+enum OrgType {
+    COMPANY
+    NGO
+    GOVERNMENT
+    COOPERATIVE
+    PERSONAL
+}
+
+enum OrgStatus {
+    ACTIVE
+    SUSPENDED
+    ARCHIVED
+}
+
+enum OrgRole {
+    OWNER   // Can delete org, transfer ownership, full access
+    ADMIN   // Can manage members, workplaces, full operational access
+    MANAGER // Can manage assigned workplaces, workers, budgets
+    MEMBER  // Can view assigned workplaces, mark attendance
+    VIEWER  // Read-only access to assigned resources
+}
+
+// NEW — broad industry categories so the platform can adapt
+// labels, defaults, and expense categories accordingly
+enum Industry {
+    CONSTRUCTION
+    AGRICULTURE
+    MANUFACTURING
+    LOGISTICS_AND_TRANSPORT
+    EVENTS_AND_HOSPITALITY
+    CLEANING_AND_FACILITIES
+    SECURITY
+    HEALTHCARE
+    RETAIL
+    TECHNOLOGY
+    EDUCATION
+    OTHER
+}
