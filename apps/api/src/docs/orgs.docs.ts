@@ -1,18 +1,18 @@
 import type { DescribeRouteOptions } from "hono-openapi";
 import { ORGS_TAG } from "../_constants/index.js";
-import { docsErrorResponse, paginatedDocsJsonContent } from "../helpers/docs.helper.js";
+import { docsErrorResponse, docsJsonContent,  } from "../helpers/docs.helper.js";
 import { orgSchema } from "../schemas/orgs.schema.js";
 
-export const getUsersDocs: DescribeRouteOptions = {
+export const createOrgDocs: DescribeRouteOptions = {
   tags: [ORGS_TAG],
-  summary: "/orgs - Get all organizations",
-
-  description: "Retrieve a list of all organizations in the system.",
+  summary: "/orgs - Create a new organization",
+  description: "Create a new organization with the provided details.",
   responses: {
-    200: {
-      description: "A list of organizations",
-      content: paginatedDocsJsonContent(orgSchema)
+    201: {
+      description: "Organization created successfully",
+      content: docsJsonContent(orgSchema)
     },
-    ...docsErrorResponse(500, "Internal Server Error")
+    ...docsErrorResponse(400, "Invalid request body"),
+    ...docsErrorResponse(500, "Unexpected error occurred while creating organization")
   }
 };
