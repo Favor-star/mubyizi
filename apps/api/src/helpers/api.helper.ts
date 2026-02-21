@@ -17,10 +17,48 @@ export const apiErrorResponse = <T>(error: T, message: string) => ({
 });
 
 export const handleAPiError = <T>(error: T, message = "An error occurred", status = 500): never => {
-  if (error instanceof APIError) throw error;
-  if (error instanceof APIError) throw error;
-  if (error instanceof Prisma.PrismaClientKnownRequestError || error instanceof Prisma.PrismaClientValidationError)
-    throw error;
+  if (error instanceof APIError)
+    throw new HTTPException(error.statusCode as ContentfulStatusCode, {
+      cause: error,
+      message: error.message || message
+    });
+
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    // Handle specific Prisma error codes
+    if (error.code === "P2025") {
+      // Record not found
+      throw new HTTPException(404, {
+        cause: error,
+        message: "Record not found"
+      });
+    }
+    if (error.code === "P2002") {
+      // Unique constraint violation
+      throw new HTTPException(409, {
+        cause: error,
+        message: "A record with this value already exists"
+      });
+    }
+    if (error.code === "P2003") {
+      // Foreign key constraint failed
+      throw new HTTPException(400, {
+        cause: error,
+        message: "Invalid reference to related record"
+      });
+    }
+    // Other Prisma errors
+    throw new HTTPException(400, {
+      cause: error,
+      message: error.message || message
+    });
+  }
+
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    throw new HTTPException(400, {
+      cause: error,
+      message: "Invalid data provided"
+    });
+  }
 
   if (error instanceof HTTPException) {
     throw new HTTPException(error.status ?? (status as ContentfulStatusCode), {

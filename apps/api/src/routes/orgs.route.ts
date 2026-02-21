@@ -4,28 +4,71 @@ import { type HonoInstanceContext } from "../_types/index.js";
 import withPrisma from "../lib/prisma-client.js";
 import { apiErrorResponse, apiSuccessResponse, handleAPiError } from "../helpers/api.helper.js";
 import { customValidator } from "../helpers/validation.helpers.js";
-import { createOrgSchema } from "../schemas/orgs.schema.js";
-import { createOrgDocs } from "../docs/orgs.docs.js";
-import { OrgRole } from "../lib/generated/prisma/enums.js";
+import { createOrgSchema, organizationParamsSchema, updateOrgSchema } from "../schemas/orgs.schema.js";
+import {
+  createOrgDocs,
+  deleteOrgDocs,
+  getOrgMembersDocs,
+  getOrgsDocs,
+  getOrgWorkplacesDocs,
+  getSingleOrgDocs,
+  updateOrgDocs
+} from "../docs/orgs.docs.js";
+import { OrgRole, SystemRole } from "../lib/generated/prisma/enums.js";
 import { requireOrgRole } from "../middlewares/roles.middleware.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
+import { paginationQuerySchema } from "../schemas/pagination.schema.js";
+import { buildPaginationMeta, getPagination, whereSearchQueryBuilder } from "../helpers/pagination.helper.js";
+import { Prisma, type Org } from "../lib/generated/prisma/client.js";
+import { hasMoreOrgPrivileges } from "../helpers/orgs.helper.js";
 
-const usersRoutes = new Hono<HonoInstanceContext>()
+const orgRoutes = new Hono<HonoInstanceContext>()
   .use(withPrisma)
-  .get("/", requireOrgRole(OrgRole.MANAGER), (c) => {
+  .get("/", requireAuth(), customValidator("query", paginationQuerySchema), describeRoute(getOrgsDocs), async (c) => {
     try {
+      const user = c.get("user")!;
       const prisma = c.get("prisma");
-      const orgs = prisma.org.findMany();
-      return c.json(apiSuccessResponse(orgs, "Organizations retrieved successfully"), 200);
+      const query = c.req.valid("query");
+      const { limit, page, skip, take } = getPagination(query);
+      const searchWhere = whereSearchQueryBuilder<Org>(query, ["name", "description"]);
+      const where = {
+        ...searchWhere,
+        members:
+          user.systemRole === SystemRole.SUPERADMIN
+            ? undefined
+            : {
+                some: {
+                  userId: user.id
+                }
+              }
+      };
+      const [orgs, orgCount] = await Promise.all([
+        prisma.org.findMany({
+          where,
+          take,
+          skip
+        }),
+        prisma.org.count({
+          where
+        })
+      ]);
+      return c.json(
+        apiSuccessResponse(
+          {
+            items: orgs,
+            meta: buildPaginationMeta(page, limit, orgCount)
+          },
+          "Organizations retrieved successfully"
+        ),
+        200
+      );
     } catch (error) {
       return handleAPiError(error, "Get orgs error");
     }
   })
-  .post("/", describeRoute(createOrgDocs), customValidator("json", createOrgSchema), async (c) => {
+  .post("/", requireAuth(), describeRoute(createOrgDocs), customValidator("json", createOrgSchema), async (c) => {
     try {
-      const user = c.get("user");
-      if (!user) {
-        return c.json(apiErrorResponse("Unauthorized", "You must be logged in to create an organization."), 401);
-      }
+      const user = c.get("user")!;
       const data = c.req.valid("json");
       const prisma = c.get("prisma");
       const org = await prisma.org.create({
@@ -43,6 +86,162 @@ const usersRoutes = new Hono<HonoInstanceContext>()
     } catch (error) {
       return handleAPiError(error, "Unexpected error occurred while creating organization");
     }
-  });
+  })
+  .get(
+    ":orgId",
+    requireAuth(),
+    customValidator("param", organizationParamsSchema),
+    requireOrgRole(OrgRole.MEMBER),
+    describeRoute(getSingleOrgDocs),
+    async (c) => {
+      try {
+        const { orgId } = c.req.valid("param");
+        const prisma = c.get("prisma");
+        const org = await prisma.org.findUnique({
+          where: { id: orgId }
+        });
+        if (!org) {
+          return c.json(apiErrorResponse("Not Found", "Organization not found."), 404);
+        }
+        return c.json(apiSuccessResponse(org, "Organization retrieved successfully"), 200);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error occurred while retrieving organization");
+      }
+    }
+  )
+  .patch(
+    ":orgId",
+    requireAuth(),
+    customValidator("param", organizationParamsSchema),
+    customValidator("json", updateOrgSchema),
+    describeRoute(updateOrgDocs),
+    async (c) => {
+      try {
+        const { orgId } = c.req.valid("param");
+        const data = c.req.valid("json");
+        const prisma = c.get("prisma");
+        const org = await prisma.org.update({
+          where: { id: orgId },
+          data
+        });
 
-export default usersRoutes;
+        return c.json(apiSuccessResponse(org, "Organization updated successfully"), 200);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error occurred while updating organization");
+      }
+    }
+  )
+  .delete(
+    ":orgId",
+    requireAuth(),
+    customValidator("param", organizationParamsSchema),
+    describeRoute(deleteOrgDocs),
+    async (c) => {
+      try {
+        const { orgId } = c.req.valid("param");
+        const prisma = c.get("prisma");
+        const res = await prisma.org.delete({
+          where: { id: orgId }
+        });
+        return c.json(apiSuccessResponse(res, "Organization deleted successfully"), 200);
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+          return c.json(apiErrorResponse("Not Found", "Organization not found."), 404);
+        }
+        return handleAPiError(error, "Unexpected error occurred while deleting organization");
+      }
+    }
+  )
+  .get(
+    ":orgId/members",
+    requireAuth(),
+    customValidator("param", organizationParamsSchema),
+    customValidator("query", paginationQuerySchema),
+    requireOrgRole(OrgRole.MEMBER),
+    describeRoute(getOrgMembersDocs),
+    async (c) => {
+      try {
+        const { orgId } = c.req.valid("param");
+        const query = c.req.valid("query");
+        const currentUser = c.get("user")!;
+        const prisma = c.get("prisma");
+        const { skip, take, page, limit } = getPagination(query);
+        const [members, totalCount] = await Promise.all([
+          prisma.orgMembership.findMany({
+            skip,
+            take,
+            where: {
+              orgId
+            },
+            include: {
+              user: true
+            }
+          }),
+          prisma.orgMembership.count({
+            where: {
+              orgId
+            }
+          })
+        ]);
+        const formattedMembers = members
+          .map(({ user, userId, orgId, ...member }) => ({
+            ...user,
+            ...member
+          }))
+          .filter((member) => {
+            const currentUserRole = currentUser.systemRole === SystemRole.SUPERADMIN ? OrgRole.OWNER : member.role;
+            return hasMoreOrgPrivileges(currentUserRole, member.role);
+          });
+        return c.json(
+          apiSuccessResponse(
+            { items: formattedMembers, meta: buildPaginationMeta(page, limit, totalCount) },
+            "Organization members retrieved successfully"
+          ),
+          200
+        );
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error occurred while retrieving organization members");
+      }
+    }
+  )
+  .get(
+    ":orgId/workplaces",
+    requireAuth(),
+    customValidator("param", organizationParamsSchema),
+    customValidator("query", paginationQuerySchema),
+    requireOrgRole(OrgRole.MEMBER),
+    describeRoute(getOrgWorkplacesDocs),
+    async (c) => {
+      try {
+        const { orgId } = c.req.valid("param");
+        const prisma = c.get("prisma");
+        const query = c.req.valid("query");
+        const { skip, take, page, limit } = getPagination(query);
+        const [workplaces, totalCount] = await Promise.all([
+          prisma.workplace.findMany({
+            where: {
+              orgId
+            },
+            skip,
+            take
+          }),
+          prisma.workplace.count({
+            where: {
+              orgId
+            }
+          })
+        ]);
+        return c.json(
+          apiSuccessResponse(
+            { items: workplaces, meta: buildPaginationMeta(page, limit, totalCount) },
+            "Organization workplaces retrieved successfully"
+          ),
+          200
+        );
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error occurred while retrieving organization workplaces");
+      }
+    }
+  );
+
+export default orgRoutes;
