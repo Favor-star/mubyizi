@@ -9,6 +9,7 @@ const options = {
   database: prismaAdapter(prisma, {
     provider: "postgresql"
   }),
+  baseURL: process.env.BETTER_AUTH_BASE_URL!,
   trustedOrigins: [process.env.FRONTEND_URL!],
   emailAndPassword: {
     enabled: true,

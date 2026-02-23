@@ -4,6 +4,7 @@ import { Scalar } from "@scalar/hono-api-reference";
 import { openAPIRouteHandler } from "hono-openapi";
 import "dotenv/config";
 import routes from "./index.js";
+import JSONPackage from "@/package.json" with { type: "json" };
 
 const serverUrl = process.env.SERVER_URL!;
 const mode = process.env.NODE_ENV;
@@ -13,9 +14,10 @@ const docs = new Hono()
     openAPIRouteHandler(routes, {
       documentation: {
         info: {
-          title: "Worktrack API",
-          version: "1.0.0",
-          description: " Worktrack API Documentation "
+          title: "Mubyizi API Documentation",
+          version: JSONPackage.version,
+          description:
+            " API documentation for the Mubyizi application, which manages organizations, workplaces, and user roles."
         },
         components: {
           securitySchemes: {
@@ -42,6 +44,9 @@ const docs = new Hono()
       url: "/api/v1/docs/openapi.json",
       theme: "bluePlanet",
       layout: "modern",
+      pageTitle: "Mubyizi API Documentation",
+      title: "Mubyizi API Documentation",
+       
       defaultHttpClient: { targetKey: "js", clientKey: "fetch" },
       servers: [
         {

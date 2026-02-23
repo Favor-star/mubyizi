@@ -10,7 +10,6 @@ import {
   deleteOrgDocs,
   getOrgMembersDocs,
   getOrgsDocs,
-  getOrgWorkplacesDocs,
   getSingleOrgDocs,
   updateOrgDocs
 } from "../docs/orgs.docs.js";
@@ -166,32 +165,41 @@ const orgRoutes = new Hono<HonoInstanceContext>()
         const currentUser = c.get("user")!;
         const prisma = c.get("prisma");
         const { skip, take, page, limit } = getPagination(query);
+        const currentMembership = await prisma.orgMembership.findFirst({
+          where: {
+            userId: currentUser.id,
+            orgId
+          }
+        });
+
+        const thisUserRole =
+          currentUser.systemRole === SystemRole.SUPERADMIN
+            ? OrgRole.OWNER
+            : (currentMembership?.role ?? OrgRole.MEMBER);
+        const allowedRoles = Object.values(OrgRole).filter((role) => hasMoreOrgPrivileges(thisUserRole, role));
+        const whereClause = {
+          orgId,
+          role: {
+            in: allowedRoles
+          }
+        };
         const [members, totalCount] = await Promise.all([
           prisma.orgMembership.findMany({
             skip,
             take,
-            where: {
-              orgId
-            },
+            where: whereClause,
             include: {
               user: true
             }
           }),
           prisma.orgMembership.count({
-            where: {
-              orgId
-            }
+            where: whereClause
           })
         ]);
-        const formattedMembers = members
-          .map(({ user, userId, orgId, ...member }) => ({
-            ...user,
-            ...member
-          }))
-          .filter((member) => {
-            const currentUserRole = currentUser.systemRole === SystemRole.SUPERADMIN ? OrgRole.OWNER : member.role;
-            return hasMoreOrgPrivileges(currentUserRole, member.role);
-          });
+        const formattedMembers = members.map(({ user, userId, orgId, ...member }) => ({
+          ...user,
+          ...member
+        }));
         return c.json(
           apiSuccessResponse(
             { items: formattedMembers, meta: buildPaginationMeta(page, limit, totalCount) },
@@ -201,45 +209,6 @@ const orgRoutes = new Hono<HonoInstanceContext>()
         );
       } catch (error) {
         return handleAPiError(error, "Unexpected error occurred while retrieving organization members");
-      }
-    }
-  )
-  .get(
-    ":orgId/workplaces",
-    requireAuth(),
-    customValidator("param", organizationParamsSchema),
-    customValidator("query", paginationQuerySchema),
-    requireOrgRole(OrgRole.MEMBER),
-    describeRoute(getOrgWorkplacesDocs),
-    async (c) => {
-      try {
-        const { orgId } = c.req.valid("param");
-        const prisma = c.get("prisma");
-        const query = c.req.valid("query");
-        const { skip, take, page, limit } = getPagination(query);
-        const [workplaces, totalCount] = await Promise.all([
-          prisma.workplace.findMany({
-            where: {
-              orgId
-            },
-            skip,
-            take
-          }),
-          prisma.workplace.count({
-            where: {
-              orgId
-            }
-          })
-        ]);
-        return c.json(
-          apiSuccessResponse(
-            { items: workplaces, meta: buildPaginationMeta(page, limit, totalCount) },
-            "Organization workplaces retrieved successfully"
-          ),
-          200
-        );
-      } catch (error) {
-        return handleAPiError(error, "Unexpected error occurred while retrieving organization workplaces");
       }
     }
   );

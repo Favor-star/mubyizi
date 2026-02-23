@@ -1,5 +1,5 @@
 import type { DescribeRouteOptions } from "hono-openapi";
-import { ORGS_TAG } from "../_constants/index.js";
+import { ORGS_TAG, WORKPLACES_TAG } from "../_constants/index.js";
 import { docsErrorResponse, docsJsonContent, paginatedDocsJsonContent } from "../helpers/docs.helper.js";
 import { orgMembershipSchema, orgSchema } from "../schemas/orgs.schema.js";
 import { userSchema } from "../schemas/user.schema.js";
@@ -98,7 +98,7 @@ export const getOrgMembersDocs: DescribeRouteOptions = {
   }
 };
 export const getOrgWorkplacesDocs: DescribeRouteOptions = {
-  tags: [ORGS_TAG],
+  tags: [ORGS_TAG, WORKPLACES_TAG],
   summary: "/orgs/{orgId}/workplaces - Get organization workplaces",
   description: "Retrieve a paginated list of workplaces in a specific organization. Supports search and pagination.",
   responses: {

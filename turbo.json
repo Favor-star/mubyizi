@@ -5,7 +5,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "env": ["NEXT_PUBLIC_API_URL", "FRONTEND_URL", "PROD_FRONTEND_URL"],
+      "env": ["NEXT_PUBLIC_API_URL", "FRONTEND_URL", "PROD_FRONTEND_URL", "BETTER_AUTH_BASE_URL"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
@@ -18,7 +18,7 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "env": ["PORT", "DATABASE_URL", "SERVER_URL", "PROD_SERVER_URL", "FRONTEND_URL", "PROD_FRONTEND_URL"]
+      "env": ["PORT", "DATABASE_URL", "SERVER_URL", "PROD_SERVER_URL", "FRONTEND_URL", "PROD_FRONTEND_URL", "BETTER_AUTH_BASE_URL"]
     }
   }
 }

@@ -56,16 +56,16 @@ export const requireWorkplaceRole = (minRole: WorkplaceRole) => {
   return createMiddleware<HonoInstanceContext>(async (c, next) => {
     const user = c.get("user");
     const prisma = c.get("prisma");
-    const siteId = c.req.param("siteId") || c.req.query("siteId");
+    const workplaceId = c.req.param("workplaceId") || c.req.query("workplaceId");
     if (!user) {
       return c.json(apiErrorResponse("Unauthorized", "You must be logged in"), 401);
     }
     if (user.systemRole === SystemRole.SUPERADMIN) return next();
-    if (!siteId) {
+    if (!workplaceId) {
       return c.json(apiErrorResponse("Bad Request", "Site ID is required"), 400);
     }
     const workplace = await prisma.workplace.findUnique({
-      where: { id: siteId }
+      where: { id: workplaceId }
     });
     if (!workplace) {
       return c.json(apiErrorResponse("Not Found", "Workplace not found"), 404);
@@ -75,7 +75,7 @@ export const requireWorkplaceRole = (minRole: WorkplaceRole) => {
       where: {
         userId_workplaceId: {
           userId: user.id,
-          workplaceId: siteId
+          workplaceId: workplaceId
         }
       }
     });
@@ -93,7 +93,7 @@ export const requireWorkplaceRole = (minRole: WorkplaceRole) => {
           error: "Insufficient workplace privileges",
           required: minRole,
           current: workPlaceAssignments.workplaceRole,
-          siteId
+          workplaceId
         },
         "You do not have the required permissions in this workplace"
       ),
