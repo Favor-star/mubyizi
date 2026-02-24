@@ -15,3 +15,4 @@ export const userSchema = z.object({
   updatedAt: z.iso.datetime(),
   lastLoginAt: z.iso.datetime().nullish()
 });
+export const createUserSchema = userSchema.omit({ id: true, createdAt: true, updatedAt: true, lastLoginAt: true });

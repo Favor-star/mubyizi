@@ -6,6 +6,7 @@ import { OrgRole, SystemRole, WorkplaceRole } from "../lib/generated/prisma/enum
 import withPrisma from "../lib/prisma-client.js";
 import { customValidator } from "../helpers/validation.helpers.js";
 import {
+  addNewWorkersToWorkplaceSchema,
   addWorkersToWorkplaceSchema,
   createWorkplaceSchema,
   updateWorkPlaceSchema,
@@ -20,6 +21,7 @@ import { organizationParamsSchema } from "../schemas/orgs.schema.js";
 import { describeRoute } from "hono-openapi";
 import { getOrgWorkplacesDocs } from "../docs/orgs.docs.js";
 import {
+  addNewWorkersToWorkplaceDocs,
   addWorkersToWorkplaceDocs,
   createWorkplaceDocs,
   deleteWorkplaceDocs,
@@ -253,7 +255,89 @@ const workplaceRoutes = new Hono<HonoInstanceContext>()
         return handleAPiError(error, "Unexpected error occurred while fetching workers. Please try again!");
       }
     }
-)
+  )
+  .post(
+    ":workplaceId/workers",
+    requireAuth(),
+    customValidator("param", workplaceParamsSchema.extend(organizationParamsSchema.shape)),
+    customValidator("json", addNewWorkersToWorkplaceSchema),
+    requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
+    describeRoute(addNewWorkersToWorkplaceDocs),
+    async (c) => {
+      try {
+        const prisma = c.get("prisma");
+        const currentUser = c.get("user")!;
+        const { workplaceId, orgId } = c.req.valid("param");
+        const newWorkers = c.req.valid("json");
+        const workplace = await prisma.workplace.findUnique({
+          where: {
+            id: workplaceId,
+            orgId
+          },
+          select: {
+            id: true
+          }
+        });
+        if (!workplace) {
+          return c.json(apiErrorResponse("Workplace not found", "The specified workplace does not exist"), 404);
+        }
+        const emailsToCreate = newWorkers.map((w) => w.email);
+        const existingUsers = await prisma.users.findMany({
+          where: {
+            email: {
+              in: emailsToCreate
+            }
+          },
+          select: {
+            email: true
+          }
+        });
+        if (existingUsers.length > 0) {
+          const existingEmails = existingUsers.map((u) => u.email);
+          return c.json(
+            apiErrorResponse(
+              existingEmails,
+              "Some users with the provided emails already exist. Please remove or use different emails for these workers."
+            ),
+            400
+          );
+        }
+        const usersOnWorkplace = await prisma.$transaction(
+          newWorkers.map((w) =>
+            prisma.users.create({
+              data: {
+                ...w,
+                workplaces: {
+                  create: {
+                    workplaceId,
+                    workplaceRole: w.workplaceRole,
+                    assignedById: currentUser.id
+                  }
+                },
+                organizations: {
+                  create: {
+                    role: OrgRole.MEMBER,
+                    orgId,
+                    invitedBy: currentUser.id
+                  }
+                }
+              },
+              select: {
+                name: true,
+                id: true
+              }
+            })
+          )
+        );
+        return c.json(
+          apiSuccessResponse(usersOnWorkplace, `${usersOnWorkplace.length} Workers created successfully!`),
+          201
+        );
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error occurred while adding workers to workplace. Please try again!");
+      }
+    }
+  )
   .patch(
     ":workplaceId/workers",
     requireAuth(),

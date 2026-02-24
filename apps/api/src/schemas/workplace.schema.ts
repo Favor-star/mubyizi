@@ -6,6 +6,7 @@ import {
   WorkplaceStatus,
   WorkplaceType
 } from "../lib/generated/prisma/enums.js";
+import { createUserSchema } from "./user.schema.js";
 
 export const workplaceSchema = z.object({
   id: z.ulid(),
@@ -50,7 +51,15 @@ export const addWorkersToWorkplaceSchema = z
     })
   )
   .min(1, "At least one worker must be added");
-
+export const addNewWorkersToWorkplaceSchema = z
+  .array(
+    createUserSchema.extend(
+      z.object({
+        workplaceRole: z.enum(WorkplaceRole).default(WorkplaceRole.WORKER)
+      }).shape
+    )
+  )
+  .min(1, "At least one worker must be added");
 export const workplaceParamsSchema = z.object({
   workplaceId: z.ulid("Workplace ID is invalid").min(1, "Workplace ID is required")
 });

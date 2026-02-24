@@ -98,3 +98,20 @@ export const getWorkersOfWorkplaceDocs: DescribeRouteOptions = {
     ...docsErrorResponse(500, "Unexpected error occurred while retrieving workers of workplace")
   }
 };
+
+export const addNewWorkersToWorkplaceDocs: DescribeRouteOptions = {
+  tags: [WORKPLACES_TAG],
+  summary: "/orgs/{orgId}/workplaces/{workplaceId}/workers - Create workers to a workplace",
+  description: "Add one or more workers to a specific workplace within the specified organization.",
+  responses: {
+    200: {
+      description: "Workers added to workplace successfully",
+      content: docsJsonContent(workplaceSchema)
+    },
+    ...docsErrorResponse(400, "Invalid request body, organization ID, or workplace ID"),
+    ...docsErrorResponse(401, "Unauthorized - User must be logged in"),
+    ...docsErrorResponse(403, "Forbidden - Insufficient organization privileges"),
+    ...docsErrorResponse(404, "Workplace not found"),
+    ...docsErrorResponse(500, "Unexpected error occurred while adding workers to workplace")
+  }
+};

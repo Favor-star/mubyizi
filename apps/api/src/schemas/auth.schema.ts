@@ -1,7 +1,7 @@
 import z from "zod";
-import { userSchema } from "./user.schema.js";
+import { createUserSchema } from "./user.schema.js";
 
-export const signUpSchema = userSchema.omit({ id: true, createdAt: true, updatedAt: true, lastLoginAt: true }).extend({
+export const signUpSchema = createUserSchema.extend({
   email: z.email("Invalid email address").min(1, "Email is required"),
   password: z
     .string()
