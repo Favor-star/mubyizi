@@ -27,10 +27,19 @@ model Attendance {
     paidAt       DateTime?
     paymentId    String?
 
+    // GPS & photo
+    latitude   Float?
+    longitude  Float?
+    photoUrl   String?
+
     // Notes & approval
-    notes      String?
-    approvedBy String?   // userId of approver
-    approvedAt DateTime?
+    notes           String?
+    approvedBy      String?        // userId of approver
+    approvedAt      DateTime?
+    approvalStatus  ApprovalStatus @default(PENDING)
+    rejectionReason String?
+    rejectedBy      String?
+    rejectedAt      DateTime?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -40,6 +49,13 @@ model Attendance {
     @@index([workplaceId, date])
     @@index([status])
     @@index([isPaid])
+    @@index([approvalStatus])
+}
+
+enum ApprovalStatus {
+    PENDING
+    APPROVED
+    REJECTED
 }
 
 enum AttendanceStatus {

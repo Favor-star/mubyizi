@@ -3,3 +3,4 @@ export const USERS_TAG = "Users";
 export const ORGS_TAG = "Organizations";
 export const AUTH_TAG = "Authentication";
 export const WORKPLACES_TAG = "Workplaces";
+export const ATTENDANCE_TAG = "Attendance";

@@ -20,12 +20,15 @@ model Users {
     dailyWage Wage?   @relation(fields: [wageId], references: [id])
 
     // Relationships
-    attendance    Attendance[]
-    workplaces    UsersOnWorkplaces[] @relation("UserAssignments")
-    assignedByMe  UsersOnWorkplaces[] @relation("AssignedByUser")
-    organizations OrgMembership[]
-    payments      Payment[]
-    earnings      WorkerEarnings[]
+    attendance        Attendance[]
+    workplaces        UsersOnWorkplaces[] @relation("UserAssignments")
+    assignedByMe      UsersOnWorkplaces[] @relation("AssignedByUser")
+    organizations     OrgMembership[]
+    payments          Payment[]
+    earnings          WorkerEarnings[]
+    skills            UserSkill[]
+    documents         UserDocument[]
+    emergencyContacts EmergencyContact[]
 
     // Audit
     createdAt   DateTime  @default(now())

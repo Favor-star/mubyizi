@@ -33,7 +33,7 @@ import {
 const workplaceRoutes = new Hono<HonoInstanceContext>()
   .use(withPrisma)
   .get(
-    ":orgId/workplaces",
+    "/",
     requireAuth(),
     customValidator("param", organizationParamsSchema),
     customValidator("query", paginationQuerySchema),
@@ -303,14 +303,14 @@ const workplaceRoutes = new Hono<HonoInstanceContext>()
           );
         }
         const usersOnWorkplace = await prisma.$transaction(
-          newWorkers.map((w) =>
+          newWorkers.map(({ workplaceRole, ...w }) =>
             prisma.users.create({
               data: {
                 ...w,
                 workplaces: {
                   create: {
                     workplaceId,
-                    workplaceRole: w.workplaceRole,
+                    workplaceRole,
                     assignedById: currentUser.id
                   }
                 },

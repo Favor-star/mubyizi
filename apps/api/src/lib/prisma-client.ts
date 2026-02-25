@@ -10,7 +10,7 @@ if (!databaseUrl) {
 const adapter = new PrismaPg({
   connectionString: databaseUrl
 });
-export const prisma = new PrismaClient({ adapter });
+export const prisma = new PrismaClient({ adapter, log: ["error", "warn","info"] });
 
 function withPrisma(c: Context, next: Next) {
   if (!c.get("prisma")) {

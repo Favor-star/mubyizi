@@ -84,3 +84,4 @@ Check these files when working on related topics:
 | Topic | File |
 |---|---|
 | Architecture, patterns, conventions | `.claude/docs/architectural_patterns.md` |
+| RBAC roles — what each role can/cannot do | `.claude/docs/roles-reference.md` |
