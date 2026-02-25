@@ -42,6 +42,7 @@ model Workplace {
     payments   Payment[]
     expenses   Expense[]
     earnings   WorkerEarnings[]
+    geofence   WorkplaceGeofence?
 
     // Audit
     createdAt DateTime @default(now())
@@ -54,7 +55,8 @@ model Workplace {
 
 model WorkplaceImage {
     id          String  @id @default(ulid())
-    image       String
+    image       String  // Cloudinary secure_url
+    publicId    String? // Cloudinary public_id (for deletion)
     description String?
 
     workplace   Workplace @relation(fields: [workplaceId], references: [id], onDelete: Cascade)
@@ -65,6 +67,21 @@ model WorkplaceImage {
     updatedAt  DateTime @updatedAt
 
     @@index([workplaceId])
+}
+
+model WorkplaceGeofence {
+    id          String    @id @default(ulid())
+    latitude    Float
+    longitude   Float
+    radius      Float     // radius in meters
+    isActive    Boolean   @default(true)
+    setBy       String?   // userId of who set it
+
+    workplace   Workplace @relation(fields: [workplaceId], references: [id], onDelete: Cascade)
+    workplaceId String    @unique
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 enum WorkplaceType {

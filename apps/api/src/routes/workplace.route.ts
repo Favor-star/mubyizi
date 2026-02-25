@@ -6,12 +6,17 @@ import { OrgRole, SystemRole, WorkplaceRole } from "../lib/generated/prisma/enum
 import withPrisma from "../lib/prisma-client.js";
 import { customValidator } from "../helpers/validation.helpers.js";
 import {
-  addNewWorkersToWorkplaceSchema,
   addWorkersToWorkplaceSchema,
   createWorkplaceSchema,
+  geofenceSchema,
+  imageParamsSchema,
+  setGeofenceSchema,
   updateWorkPlaceSchema,
+  updateWorkerRoleSchema,
+  uploadImageSchema,
   workplaceParamsSchema,
-  workplaceQuerySchema
+  workplaceQuerySchema,
+  workerUserParamsSchema
 } from "../schemas/workplace.schema.js";
 import { paginationQuerySchema } from "../schemas/pagination.schema.js";
 import { buildPaginationMeta, getPagination } from "../helpers/pagination.helper.js";
@@ -21,14 +26,25 @@ import { organizationParamsSchema } from "../schemas/orgs.schema.js";
 import { describeRoute } from "hono-openapi";
 import { getOrgWorkplacesDocs } from "../docs/orgs.docs.js";
 import {
-  addNewWorkersToWorkplaceDocs,
-  addWorkersToWorkplaceDocs,
+  assignWorkersDocs,
   createWorkplaceDocs,
+  deleteGeofenceDocs,
   deleteWorkplaceDocs,
+  deleteWorkplaceImageDocs,
+  getActivityLogDocs,
+  getGeofenceDocs,
   getSingleWorkplaceDocs,
   getWorkersOfWorkplaceDocs,
-  updateWorkplaceDocs
+  getWorkplaceStatsDocs,
+  setGeofenceDocs,
+  unassignWorkerDocs,
+  updateWorkerRoleDocs,
+  updateWorkplaceDocs,
+  uploadWorkplaceImageDocs,
+  getWorkplaceImagesDocs
 } from "../docs/workplaces.docs.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "../lib/cloudinary.js";
+import { WORKPLACE_ROLE_WEIGHT } from "../_constants/role-weights.constants.js";
 
 const workplaceRoutes = new Hono<HonoInstanceContext>()
   .use(withPrisma)
@@ -168,6 +184,91 @@ const workplaceRoutes = new Hono<HonoInstanceContext>()
       }
     }
   )
+  // ── IMAGES ────────────────────────────────────────────────────
+  .get(
+    ":workplaceId/images",
+    requireAuth(),
+    customValidator("param", workplaceParamsSchema.extend(organizationParamsSchema.shape)),
+    requireWorkplaceRole(WorkplaceRole.WORKER),
+    describeRoute(getWorkplaceImagesDocs),
+    async (c) => {
+      try {
+        const prisma = c.get("prisma");
+        const { workplaceId } = c.req.valid("param");
+        const images = await prisma.workplaceImage.findMany({
+          where: { workplaceId },
+          orderBy: { createdAt: "desc" }
+        });
+        return c.json(apiSuccessResponse(images, "Workplace images retrieved successfully"), 200);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error retrieving workplace images");
+      }
+    }
+  )
+  .post(
+    ":workplaceId/images",
+    requireAuth(),
+    customValidator("param", workplaceParamsSchema.extend(organizationParamsSchema.shape)),
+    customValidator("form", uploadImageSchema),
+    requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
+    describeRoute(uploadWorkplaceImageDocs),
+    async (c) => {
+      try {
+        const prisma = c.get("prisma");
+        const currentUser = c.get("user")!;
+        const { workplaceId } = c.req.valid("param");
+        const { image, description } = c.req.valid("form");
+        const imageBuffer = Buffer.from(await image.arrayBuffer());
+        const { url, publicId } = await uploadToCloudinary(imageBuffer, `workplace-images/${workplaceId}`);
+
+        const imageRecord = await prisma.workplaceImage.create({
+          data: {
+            image: url,
+            publicId,
+            description,
+            workplaceId,
+            uploadedBy: currentUser.id
+          }
+        });
+        return c.json(apiSuccessResponse(imageRecord, "Image uploaded successfully"), 201);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error uploading workplace image");
+      }
+    }
+  )
+  .delete(
+    ":workplaceId/images/:imageId",
+    requireAuth(),
+    customValidator(
+      "param",
+      workplaceParamsSchema.extend(organizationParamsSchema.shape).extend(imageParamsSchema.shape)
+    ),
+    requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
+    describeRoute(deleteWorkplaceImageDocs),
+    async (c) => {
+      try {
+        const prisma = c.get("prisma");
+        const { workplaceId, imageId } = c.req.valid("param");
+
+        const image = await prisma.workplaceImage.findUnique({
+          where: { id: imageId }
+        });
+        if (!image || image.workplaceId !== workplaceId) {
+          return c.json(apiErrorResponse("NOT_FOUND", "Image not found"), 404);
+        }
+
+        if (image.publicId) {
+          await deleteFromCloudinary(image.publicId);
+        }
+
+        const deleted = await prisma.workplaceImage.delete({ where: { id: imageId } });
+        return c.json(apiSuccessResponse(deleted, "Image deleted successfully"), 200);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error deleting workplace image");
+      }
+    }
+  )
+  // ── WORKERS ───────────────────────────────────────────────────
   .get(
     ":workplaceId/workers",
     requireAuth(),
@@ -260,132 +361,394 @@ const workplaceRoutes = new Hono<HonoInstanceContext>()
     ":workplaceId/workers",
     requireAuth(),
     customValidator("param", workplaceParamsSchema.extend(organizationParamsSchema.shape)),
-    customValidator("json", addNewWorkersToWorkplaceSchema),
-    requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
-    describeRoute(addNewWorkersToWorkplaceDocs),
-    async (c) => {
-      try {
-        const prisma = c.get("prisma");
-        const currentUser = c.get("user")!;
-        const { workplaceId, orgId } = c.req.valid("param");
-        const newWorkers = c.req.valid("json");
-        const workplace = await prisma.workplace.findUnique({
-          where: {
-            id: workplaceId,
-            orgId
-          },
-          select: {
-            id: true
-          }
-        });
-        if (!workplace) {
-          return c.json(apiErrorResponse("Workplace not found", "The specified workplace does not exist"), 404);
-        }
-        const emailsToCreate = newWorkers.map((w) => w.email);
-        const existingUsers = await prisma.users.findMany({
-          where: {
-            email: {
-              in: emailsToCreate
-            }
-          },
-          select: {
-            email: true
-          }
-        });
-        if (existingUsers.length > 0) {
-          const existingEmails = existingUsers.map((u) => u.email);
-          return c.json(
-            apiErrorResponse(
-              existingEmails,
-              "Some users with the provided emails already exist. Please remove or use different emails for these workers."
-            ),
-            400
-          );
-        }
-        const usersOnWorkplace = await prisma.$transaction(
-          newWorkers.map(({ workplaceRole, ...w }) =>
-            prisma.users.create({
-              data: {
-                ...w,
-                workplaces: {
-                  create: {
-                    workplaceId,
-                    workplaceRole,
-                    assignedById: currentUser.id
-                  }
-                },
-                organizations: {
-                  create: {
-                    role: OrgRole.MEMBER,
-                    orgId,
-                    invitedBy: currentUser.id
-                  }
-                }
-              },
-              select: {
-                name: true,
-                id: true
-              }
-            })
-          )
-        );
-        return c.json(
-          apiSuccessResponse(usersOnWorkplace, `${usersOnWorkplace.length} Workers created successfully!`),
-          201
-        );
-      } catch (error) {
-        return handleAPiError(error, "Unexpected error occurred while adding workers to workplace. Please try again!");
-      }
-    }
-  )
-  .patch(
-    ":workplaceId/workers",
-    requireAuth(),
-    customValidator("param", workplaceParamsSchema.extend(organizationParamsSchema.shape)),
     customValidator("json", addWorkersToWorkplaceSchema),
     requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
-    describeRoute(addWorkersToWorkplaceDocs),
+    describeRoute(assignWorkersDocs),
     async (c) => {
       try {
         const prisma = c.get("prisma");
         const currentUser = c.get("user")!;
-        const { workplaceId, orgId } = c.req.valid("param");
-        const newWorkers = c.req.valid("json");
-        const existingUsers = await prisma.users.findMany({
-          where: {
-            id: {
-              in: newWorkers.map((w) => w.userId)
-            }
-          },
-          select: {
-            id: true
-          }
-        });
-        const existingUserIds = new Set(existingUsers.map((u) => u.id));
-        const invalidWorkers = newWorkers.filter((w) => !existingUserIds.has(w.userId));
+        const { workplaceId } = c.req.valid("param");
+        const workers = c.req.valid("json");
 
-        if (invalidWorkers.length > 0) {
+        const existingUsers = await prisma.users.findMany({
+          where: { id: { in: workers.map((w) => w.userId) } },
+          select: { id: true }
+        });
+        const existingIds = new Set(existingUsers.map((u) => u.id));
+        const invalid = workers.filter((w) => !existingIds.has(w.userId));
+
+        if (invalid.length > 0) {
           return c.json(
-            apiErrorResponse(
-              { data: invalidWorkers },
-              `Some workers do not exists. Please remove or create them before adding to workplace.`
-            ),
+            apiErrorResponse({ data: invalid }, "Some user IDs do not exist. Please verify and try again."),
             400
           );
         }
-        const validWorkers = newWorkers.filter((w) => existingUserIds.has(w.userId));
-        const workesAdded = await prisma.usersOnWorkplaces.createMany({
-          data: validWorkers.map((w) => ({
-            ...w,
+
+        const assigned = await prisma.usersOnWorkplaces.createMany({
+          data: workers.map((w) => ({
+            userId: w.userId,
+            workplaceRole: w.workplaceRole,
             workplaceId,
-            orgId,
             assignedById: currentUser.id
           })),
           skipDuplicates: true
         });
-        return c.json(apiSuccessResponse(workesAdded, `${workesAdded.count} Workers added successfully!`), 201);
+        return c.json(apiSuccessResponse(assigned, `${assigned.count} worker(s) assigned successfully`), 201);
       } catch (error) {
-        return handleAPiError(error, "Unexpected error occurred while adding a worker. Please try again!");
+        return handleAPiError(error, "Unexpected error occurred while assigning workers. Please try again!");
+      }
+    }
+  )
+  .patch(
+    ":workplaceId/workers/:userId",
+    requireAuth(),
+    customValidator(
+      "param",
+      workplaceParamsSchema.extend(organizationParamsSchema.shape).extend(workerUserParamsSchema.shape)
+    ),
+    customValidator("json", updateWorkerRoleSchema),
+    requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
+    describeRoute(updateWorkerRoleDocs),
+    async (c) => {
+      try {
+        const prisma = c.get("prisma");
+        const currentUser = c.get("user")!;
+        const { workplaceId, userId } = c.req.valid("param");
+        const { workplaceRole: newRole } = c.req.valid("json");
+
+        // Get caller's role
+        const callerAssignment = await prisma.usersOnWorkplaces.findUnique({
+          where: { userId_workplaceId: { userId: currentUser.id, workplaceId } }
+        });
+        const callerRole =
+          currentUser.systemRole === SystemRole.SUPERADMIN
+            ? WorkplaceRole.WORKPLACE_MANAGER
+            : (callerAssignment?.workplaceRole ?? WorkplaceRole.VISITOR);
+
+        // Get target's current role
+        const targetAssignment = await prisma.usersOnWorkplaces.findUnique({
+          where: { userId_workplaceId: { userId, workplaceId } }
+        });
+        if (!targetAssignment || !targetAssignment.isActive) {
+          return c.json(apiErrorResponse("NOT_FOUND", "Worker not found in this workplace"), 404);
+        }
+
+        // Caller must outrank target's current role
+        if (
+          !hasMoreWorkplacePrivileges(callerRole, targetAssignment.workplaceRole) ||
+          callerRole === targetAssignment.workplaceRole
+        ) {
+          return c.json(
+            apiErrorResponse("FORBIDDEN", "You cannot change the role of a worker with equal or higher privileges"),
+            403
+          );
+        }
+
+        // Caller cannot assign a role higher than their own
+        if (WORKPLACE_ROLE_WEIGHT[newRole] > WORKPLACE_ROLE_WEIGHT[callerRole]) {
+          return c.json(apiErrorResponse("FORBIDDEN", "You cannot assign a role higher than your own"), 403);
+        }
+
+        const updated = await prisma.usersOnWorkplaces.update({
+          where: { userId_workplaceId: { userId, workplaceId } },
+          data: { workplaceRole: newRole }
+        });
+        return c.json(apiSuccessResponse(updated, "Worker role updated successfully"), 200);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error occurred while updating worker role. Please try again!");
+      }
+    }
+  )
+  .delete(
+    ":workplaceId/workers/:userId",
+    requireAuth(),
+    customValidator(
+      "param",
+      workplaceParamsSchema.extend(organizationParamsSchema.shape).extend(workerUserParamsSchema.shape)
+    ),
+    requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
+    describeRoute(unassignWorkerDocs),
+    async (c) => {
+      try {
+        const prisma = c.get("prisma");
+        const currentUser = c.get("user")!;
+        const { workplaceId, userId } = c.req.valid("param");
+
+        // Get caller's role
+        const callerAssignment = await prisma.usersOnWorkplaces.findUnique({
+          where: { userId_workplaceId: { userId: currentUser.id, workplaceId } }
+        });
+        const callerRole =
+          currentUser.systemRole === SystemRole.SUPERADMIN
+            ? WorkplaceRole.WORKPLACE_MANAGER
+            : (callerAssignment?.workplaceRole ?? WorkplaceRole.VISITOR);
+
+        // Get target
+        const targetAssignment = await prisma.usersOnWorkplaces.findUnique({
+          where: { userId_workplaceId: { userId, workplaceId } }
+        });
+        if (!targetAssignment || !targetAssignment.isActive) {
+          return c.json(apiErrorResponse("NOT_FOUND", "Worker not found in this workplace"), 404);
+        }
+
+        // Caller must outrank target
+        if (
+          !hasMoreWorkplacePrivileges(callerRole, targetAssignment.workplaceRole) ||
+          callerRole === targetAssignment.workplaceRole
+        ) {
+          return c.json(
+            apiErrorResponse("FORBIDDEN", "You cannot unassign a worker with equal or higher privileges"),
+            403
+          );
+        }
+
+        await prisma.usersOnWorkplaces.update({
+          where: { userId_workplaceId: { userId, workplaceId } },
+          data: { isActive: false, removedAt: new Date() }
+        });
+        return c.json(apiSuccessResponse(null, "Worker unassigned successfully"), 200);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error occurred while unassigning worker. Please try again!");
+      }
+    }
+  )
+  // ── STATS ─────────────────────────────────────────────────────
+  .get(
+    ":workplaceId/stats",
+    requireAuth(),
+    customValidator("param", workplaceParamsSchema.extend(organizationParamsSchema.shape)),
+    requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
+    describeRoute(getWorkplaceStatsDocs),
+    async (c) => {
+      try {
+        const prisma = c.get("prisma");
+        const { workplaceId, orgId } = c.req.valid("param");
+
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+
+        const workplace = await prisma.workplace.findUnique({
+          where: { id: workplaceId, orgId },
+          include: { budget: true }
+        });
+        if (!workplace) {
+          return c.json(apiErrorResponse("NOT_FOUND", "Workplace not found"), 404);
+        }
+
+        const [headcount, presentToday] = await Promise.all([
+          prisma.usersOnWorkplaces.count({ where: { workplaceId, isActive: true } }),
+          prisma.attendance.count({ where: { workplaceId, date: todayStart, checkIn: { not: null } } })
+        ]);
+
+        const attendanceRate = headcount > 0 ? Math.round((presentToday / headcount) * 100) : 0;
+
+        return c.json(
+          apiSuccessResponse(
+            {
+              headcount,
+              presentToday,
+              attendanceRate,
+              totalSpent: workplace.totalSpent,
+              laborCost: workplace.laborCost,
+              budget: workplace.budget?.planned ?? null,
+              budgetRemaining:
+                workplace.budget?.planned != null ? workplace.budget.planned - workplace.totalSpent : null,
+              lastCalculated: workplace.lastCalculated
+            },
+            "Workplace stats retrieved successfully"
+          ),
+          200
+        );
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error retrieving workplace stats");
+      }
+    }
+  )
+  // ── ACTIVITY LOG ──────────────────────────────────────────────
+  .get(
+    ":workplaceId/activity-log",
+    requireAuth(),
+    customValidator("param", workplaceParamsSchema.extend(organizationParamsSchema.shape)),
+    customValidator("query", paginationQuerySchema),
+    requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
+    describeRoute(getActivityLogDocs),
+    async (c) => {
+      try {
+        const prisma = c.get("prisma");
+        const { workplaceId, orgId } = c.req.valid("param");
+        const query = c.req.valid("query");
+        const { skip, take, page, limit } = getPagination(query);
+
+        const workplaceExists = await prisma.workplace.findUnique({
+          where: { id: workplaceId, orgId },
+          select: { id: true }
+        });
+        if (!workplaceExists) {
+          return c.json(apiErrorResponse("NOT_FOUND", "Workplace not found"), 404);
+        }
+
+        const [attendances, assignments] = await Promise.all([
+          prisma.attendance.findMany({
+            where: { workplaceId },
+            select: {
+              checkIn: true,
+              checkOut: true,
+              date: true,
+              userId: true,
+              user: { select: { name: true } }
+            },
+            orderBy: { date: "desc" }
+          }),
+          prisma.usersOnWorkplaces.findMany({
+            where: { workplaceId },
+            select: {
+              userId: true,
+              workplaceRole: true,
+              assignedAt: true,
+              removedAt: true,
+              isActive: true,
+              user: { select: { name: true } },
+              assignedBy: { select: { name: true } }
+            }
+          })
+        ]);
+
+        type ActivityEvent = {
+          type: "CLOCK_IN" | "CLOCK_OUT" | "ASSIGNED" | "UNASSIGNED";
+          subjectName: string | null;
+          actorName: string | null;
+          timestamp: Date;
+          meta: Record<string, unknown>;
+        };
+
+        const events: ActivityEvent[] = [];
+
+        for (const a of attendances) {
+          if (a.checkIn) {
+            events.push({
+              type: "CLOCK_IN",
+              subjectName: a.user.name,
+              actorName: a.user.name,
+              timestamp: a.checkIn,
+              meta: { date: a.date }
+            });
+          }
+          if (a.checkOut) {
+            events.push({
+              type: "CLOCK_OUT",
+              subjectName: a.user.name,
+              actorName: a.user.name,
+              timestamp: a.checkOut,
+              meta: { date: a.date }
+            });
+          }
+        }
+
+        for (const w of assignments) {
+          events.push({
+            type: "ASSIGNED",
+            subjectName: w.user.name,
+            actorName: w.assignedBy?.name ?? null,
+            timestamp: w.assignedAt,
+            meta: { role: w.workplaceRole }
+          });
+          if (!w.isActive && w.removedAt) {
+            events.push({
+              type: "UNASSIGNED",
+              subjectName: w.user.name,
+              actorName: null,
+              timestamp: w.removedAt,
+              meta: { role: w.workplaceRole }
+            });
+          }
+        }
+
+        events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+        const total = events.length;
+        const pageItems = events.slice(skip, skip + take);
+
+        return c.json(
+          apiSuccessResponse(
+            { items: pageItems, meta: buildPaginationMeta(page, limit, total) },
+            "Activity log retrieved successfully"
+          ),
+          200
+        );
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error retrieving activity log");
+      }
+    }
+  )
+  // ── GEOFENCE ──────────────────────────────────────────────────
+  .get(
+    ":workplaceId/geofence",
+    requireAuth(),
+    customValidator("param", workplaceParamsSchema.extend(organizationParamsSchema.shape)),
+    requireWorkplaceRole(WorkplaceRole.WORKER),
+    describeRoute(getGeofenceDocs),
+    async (c) => {
+      try {
+        const prisma = c.get("prisma");
+        const { workplaceId } = c.req.valid("param");
+        const geofence = await prisma.workplaceGeofence.findUnique({
+          where: { workplaceId }
+        });
+        if (!geofence) {
+          return c.json(apiErrorResponse("NOT_FOUND", "No geofence configured for this workplace"), 404);
+        }
+        return c.json(apiSuccessResponse(geofence, "Geofence retrieved successfully"), 200);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error retrieving geofence");
+      }
+    }
+  )
+  .post(
+    ":workplaceId/geofence",
+    requireAuth(),
+    customValidator("param", workplaceParamsSchema.extend(organizationParamsSchema.shape)),
+    customValidator("json", setGeofenceSchema),
+    requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
+    describeRoute(setGeofenceDocs),
+    async (c) => {
+      try {
+        const prisma = c.get("prisma");
+        const currentUser = c.get("user")!;
+        const { workplaceId } = c.req.valid("param");
+        const data = c.req.valid("json");
+
+        const geofence = await prisma.workplaceGeofence.upsert({
+          where: { workplaceId },
+          create: { ...data, workplaceId, setBy: currentUser.id },
+          update: { ...data, setBy: currentUser.id }
+        });
+        return c.json(apiSuccessResponse(geofence, "Geofence set successfully"), 200);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error setting geofence");
+      }
+    }
+  )
+  .delete(
+    ":workplaceId/geofence",
+    requireAuth(),
+    customValidator("param", workplaceParamsSchema.extend(organizationParamsSchema.shape)),
+    requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
+    describeRoute(deleteGeofenceDocs),
+    async (c) => {
+      try {
+        const prisma = c.get("prisma");
+        const { workplaceId } = c.req.valid("param");
+
+        const existing = await prisma.workplaceGeofence.findUnique({ where: { workplaceId } });
+        if (!existing) {
+          return c.json(apiErrorResponse("NOT_FOUND", "No geofence configured for this workplace"), 404);
+        }
+
+        const deleted = await prisma.workplaceGeofence.delete({ where: { workplaceId } });
+        return c.json(apiSuccessResponse(deleted, "Geofence deleted successfully"), 200);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error deleting geofence");
       }
     }
   );

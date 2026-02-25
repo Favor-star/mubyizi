@@ -20,7 +20,7 @@ export const workplaceSchema = z.object({
   image: z.array(z.string()).optional(),
   startDate: z.iso.datetime().nullish(),
   endDate: z.iso.datetime().nullish(),
-  budgedId: z.string().nullish(),
+  budgetId: z.string().nullish(),
   totalSpent: z.number().default(0),
   laborCost: z.number().default(0),
   lastCalculated: z.iso.datetime().nullish(),
@@ -36,7 +36,7 @@ export const createWorkplaceSchema = workplaceSchema.omit({
   laborCost: true,
   lastCalculated: true,
   image: true,
-  budgedId: true,
+  budgetId: true,
   orgId: true
 });
 export const updateWorkPlaceSchema = createWorkplaceSchema.partial();
@@ -77,4 +77,53 @@ export const workplaceWithWorkersSchema = z.object({
   skillLevel: z.enum(SkillLevel).nullable(),
   phoneNumber: z.string().nullable(),
   profileImage: z.string().nullable()
+});
+
+// Image schemas
+export const workplaceImageSchema = z.object({
+  id: z.ulid(),
+  image: z.string().url(),
+  publicId: z.string().nullish(),
+  description: z.string().nullish(),
+  workplaceId: z.ulid(),
+  uploadedBy: z.string().nullish(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime()
+});
+
+export const uploadImageSchema = z.object({
+  image: z.file(),
+  description: z.string().max(500).optional()
+});
+
+export const imageParamsSchema = z.object({
+  imageId: z.ulid("Invalid image ID")
+});
+
+// Worker management schemas
+export const updateWorkerRoleSchema = z.object({
+  workplaceRole: z.enum(WorkplaceRole)
+});
+
+export const workerUserParamsSchema = z.object({
+  userId: z.ulid("Invalid user ID")
+});
+
+// Geofence schemas
+export const geofenceSchema = z.object({
+  id: z.ulid(),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  radius: z.number().positive(),
+  isActive: z.boolean(),
+  workplaceId: z.ulid(),
+  setBy: z.string().nullish(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime()
+});
+
+export const setGeofenceSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  radius: z.number().positive("Radius must be a positive number (meters)")
 });
