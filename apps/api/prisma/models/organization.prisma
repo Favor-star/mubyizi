@@ -20,6 +20,7 @@ model Org {
 
     workplaces     Workplace[]
     members        OrgMembership[]
+    invites        OrgInvite[]
     expenses       Expense[]
     payments       Payment[]
     workerEarnings WorkerEarnings[]
@@ -69,6 +70,32 @@ enum OrgStatus {
     ACTIVE
     SUSPENDED
     ARCHIVED
+}
+
+model OrgInvite {
+    id        String       @id @default(ulid())
+    org       Org          @relation(fields: [orgId], references: [id], onDelete: Cascade)
+    orgId     String
+    invitedBy String       // userId of inviter
+    email     String?
+    phone     String?
+    role      OrgRole      @default(MEMBER)
+    token     String       @unique
+    status    InviteStatus @default(PENDING)
+    expiresAt DateTime
+    createdAt DateTime     @default(now())
+    updatedAt DateTime     @updatedAt
+
+    @@index([token])
+    @@index([orgId, status])
+}
+
+enum InviteStatus {
+    PENDING
+    ACCEPTED
+    DECLINED
+    EXPIRED
+    REVOKED
 }
 
 enum OrgRole {

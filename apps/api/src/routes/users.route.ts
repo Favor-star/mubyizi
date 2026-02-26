@@ -65,7 +65,7 @@ const usersRoutes = new Hono<HonoInstanceContext>()
       try {
         const prisma = c.get("prisma");
         const currentUser = c.get("user")!;
-        const { workplaceId, userId, dateFrom, dateTo, format } = c.req.valid("query");
+        const {  format } = c.req.valid("query");
 
         // SUPERADMIN or MANAGER in orgId
         if (currentUser.systemRole !== SystemRole.SUPERADMIN) {
@@ -718,9 +718,7 @@ const usersRoutes = new Hono<HonoInstanceContext>()
         if (!assertSelfOrSuperAdmin(currentUser, id)) {
           return c.json(apiErrorResponse("FORBIDDEN", "You can only manage your own documents"), 403);
         }
-        console.log("Form data:", await c.req.formData());
         const { documentType, title, expiresAt, notes, file } = c.req.valid("form");
-        console.log("File: ", file);
         const fileBuffer = Buffer.from(await file.arrayBuffer());
         const { url, publicId } = await uploadToCloudinary(fileBuffer, `user-documents/${id}`, );
 

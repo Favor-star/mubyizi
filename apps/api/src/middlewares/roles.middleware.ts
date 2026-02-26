@@ -2,7 +2,7 @@ import { createMiddleware } from "hono/factory";
 import { OrgRole, SystemRole, WorkplaceRole } from "../lib/generated/prisma/enums.js";
 import { type HonoInstanceContext } from "../_types/index.js";
 import { apiErrorResponse } from "../helpers/api.helper.js";
-import { WORKPLACE_ROLE_WEIGHT } from "../_constants/role-weights.constants.js";
+import { ORG_ROLE_WEIGHT, WORKPLACE_ROLE_WEIGHT } from "../_constants/role-weights.constants.js";
 
 export const requireOrgRole = (minRole: OrgRole) => {
   return createMiddleware<HonoInstanceContext>(async (c, next) => {
@@ -31,9 +31,9 @@ export const requireOrgRole = (minRole: OrgRole) => {
     if (!membership) {
       return c.json(apiErrorResponse("Forbidden", "You are not a member of this organization."), 403);
     }
-    const userRolWeight = OrgRole[membership.role];
-    const requiredRoleWeight = OrgRole[minRole];
-    if (userRolWeight >= requiredRoleWeight) {
+    const userWeight = ORG_ROLE_WEIGHT[membership.role];
+    const requiredWeight = ORG_ROLE_WEIGHT[minRole];
+    if (userWeight >= requiredWeight) {
       return next();
     }
 

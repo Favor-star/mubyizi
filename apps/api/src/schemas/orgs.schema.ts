@@ -38,3 +38,51 @@ export const orgMembershipSchema = z.object({
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime()
 });
+
+// Member management
+export const orgMemberUserParamsSchema = z.object({
+  userId: z.ulid("Invalid user ID")
+});
+export const addMemberSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  role: z.enum(OrgRole).default(OrgRole.MEMBER)
+});
+export const updateMemberRoleSchema = z.object({
+  role: z.enum(OrgRole)
+});
+
+// Invite
+export const inviteMemberSchema = z
+  .object({
+    email: z.email().optional(),
+    phone: z.string().optional(),
+    role: z.enum(OrgRole).default(OrgRole.MEMBER)
+  })
+  .refine((d) => d.email || d.phone, { message: "Either email or phone is required" });
+
+export const acceptDeclineInviteSchema = z.object({
+  token: z.string().min(1, "Token is required")
+});
+
+export const orgInviteSchema = z.object({
+  id: z.ulid(),
+  orgId: z.ulid(),
+  invitedBy: z.string(),
+  email: z.email().nullish(),
+  phone: z.string().nullish(),
+  role: z.enum(OrgRole),
+  status: z.string(),
+  expiresAt: z.iso.datetime(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime()
+});
+
+// Settings (subset of Org fields)
+export const orgSettingsSchema = z.object({
+  timezone: z.string().optional(),
+  logoUrl: z.string().url().optional(),
+  website: z.string().url().optional(),
+  addressLine: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().optional()
+});
