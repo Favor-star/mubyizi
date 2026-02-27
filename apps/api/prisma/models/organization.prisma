@@ -80,6 +80,7 @@ model OrgInvite {
     email     String?
     phone     String?
     role      OrgRole      @default(MEMBER)
+    provisionalUserId String? // links to Users.id of a provisional account being claimed
     token     String       @unique
     status    InviteStatus @default(PENDING)
     expiresAt DateTime

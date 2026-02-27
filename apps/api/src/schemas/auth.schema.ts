@@ -11,7 +11,8 @@ export const signUpSchema = createUserSchema.extend({
       error:
         "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character."
     }),
-  rememberMe: z.boolean().default(false)
+  rememberMe: z.boolean().default(false),
+  claimToken: z.string().optional() // invite token to claim a provisional account
 });
 export const loginSchema = z.object({
   email: z.email("Invalid email address").min(1, "Email is required"),

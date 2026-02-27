@@ -1,6 +1,7 @@
 import z from "zod";
 import {
   JobCategory,
+  OrgRole,
   SkillLevel,
   WorkplaceRole,
   WorkplaceStatus,
@@ -126,4 +127,16 @@ export const setGeofenceSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   radius: z.number().positive("Radius must be a positive number (meters)")
+});
+
+// Provisional worker provisioning at workplace level
+export const provisionWorkplaceWorkerSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  phoneNumber: z.string().optional(),
+  email: z.email().optional(),
+  occupation: z.string().optional(),
+  occupationCategory: z.enum(JobCategory).optional(),
+  skillLevel: z.enum(SkillLevel).optional(),
+  orgRole: z.enum(OrgRole).default(OrgRole.MEMBER),
+  workplaceRole: z.enum(WorkplaceRole).default(WorkplaceRole.WORKER)
 });

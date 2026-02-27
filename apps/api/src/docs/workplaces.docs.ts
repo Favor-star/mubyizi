@@ -3,10 +3,12 @@ import { WORKPLACES_TAG } from "../_constants/index.js";
 import { docsErrorResponse, docsJsonContent, paginatedDocsJsonContent } from "../helpers/docs.helper.js";
 import {
   geofenceSchema,
+  provisionWorkplaceWorkerSchema,
   workplaceImageSchema,
   workplaceSchema,
   workplaceWithWorkersSchema
 } from "../schemas/workplace.schema.js";
+import { userSchema } from "../schemas/user.schema.js";
 
 export const createWorkplaceDocs: DescribeRouteOptions = {
   tags: [WORKPLACES_TAG],
@@ -276,5 +278,25 @@ export const deleteGeofenceDocs: DescribeRouteOptions = {
     ...docsErrorResponse(403, "Forbidden - Insufficient workplace privileges"),
     ...docsErrorResponse(404, "No geofence configured for this workplace"),
     ...docsErrorResponse(500, "Unexpected error deleting geofence")
+  }
+};
+
+export const provisionWorkplaceWorkerDocs: DescribeRouteOptions = {
+  tags: [WORKPLACES_TAG],
+  summary: "/orgs/{orgId}/workplaces/{workplaceId}/workers/provision - Provision a new worker",
+  description: "Create a provisional user, add them to the organization, and assign them to this workplace in a single step. The user has no login credentials until they claim their account.",
+  responses: {
+    201: {
+      description: "Worker provisioned and assigned successfully",
+      content: docsJsonContent(
+        userSchema.pick({ id: true, name: true, email: true, phoneNumber: true, accountStatus: true })
+      )
+    },
+    ...docsErrorResponse(400, "Invalid request body"),
+    ...docsErrorResponse(401, "Unauthorized - User must be logged in"),
+    ...docsErrorResponse(403, "Forbidden - Insufficient workplace privileges or role escalation attempt"),
+    ...docsErrorResponse(404, "Workplace not found"),
+    ...docsErrorResponse(409, "A user with this email already exists"),
+    ...docsErrorResponse(500, "Unexpected error occurred while provisioning worker")
   }
 };

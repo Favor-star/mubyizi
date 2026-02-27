@@ -12,6 +12,7 @@ import {
   organizationParamsSchema,
   orgMemberUserParamsSchema,
   orgSettingsSchema,
+  provisionOrgWorkerSchema,
   updateMemberRoleSchema,
   updateOrgSchema
 } from "../schemas/orgs.schema.js";
@@ -28,12 +29,14 @@ import {
   getOrgsDocs,
   getSingleOrgDocs,
   inviteMemberDocs,
+  inviteToClaimDocs,
+  provisionOrgWorkerDocs,
   removeOrgMemberDocs,
   updateOrgDocs,
   updateOrgMemberRoleDocs,
   updateOrgSettingsDocs
 } from "../docs/orgs.docs.js";
-import { ApprovalStatus, OrgRole, SystemRole } from "../lib/generated/prisma/enums.js";
+import { AccountStatus, ApprovalStatus, OrgRole, SystemRole } from "../lib/generated/prisma/enums.js";
 import { requireOrgRole } from "../middlewares/roles.middleware.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { paginationQuerySchema } from "../schemas/pagination.schema.js";
@@ -69,7 +72,10 @@ const orgRoutes = new Hono<HonoInstanceContext>()
         prisma.org.count({ where })
       ]);
       return c.json(
-        apiSuccessResponse({ items: orgs, meta: buildPaginationMeta(page, limit, orgCount) }, "Organizations retrieved successfully"),
+        apiSuccessResponse(
+          { items: orgs, meta: buildPaginationMeta(page, limit, orgCount) },
+          "Organizations retrieved successfully"
+        ),
         200
       );
     } catch (error) {
@@ -176,7 +182,9 @@ const orgRoutes = new Hono<HonoInstanceContext>()
           where: { userId: currentUser.id, orgId }
         });
         const callerRole =
-          currentUser.systemRole === SystemRole.SUPERADMIN ? OrgRole.OWNER : (currentMembership?.role ?? OrgRole.MEMBER);
+          currentUser.systemRole === SystemRole.SUPERADMIN
+            ? OrgRole.OWNER
+            : (currentMembership?.role ?? OrgRole.MEMBER);
         const allowedRoles = Object.values(OrgRole).filter((role) => hasMoreOrgPrivileges(callerRole, role));
         const whereClause = { orgId, role: { in: allowedRoles } };
         const [members, totalCount] = await Promise.all([
@@ -224,7 +232,10 @@ const orgRoutes = new Hono<HonoInstanceContext>()
           currentUser.systemRole === SystemRole.SUPERADMIN ? OrgRole.OWNER : (callerMembership?.role ?? OrgRole.MEMBER);
 
         if (ORG_ROLE_WEIGHT[role] >= ORG_ROLE_WEIGHT[callerRole]) {
-          return c.json(apiErrorResponse("FORBIDDEN", "You cannot assign a role equal to or higher than your own"), 403);
+          return c.json(
+            apiErrorResponse("FORBIDDEN", "You cannot assign a role equal to or higher than your own"),
+            403
+          );
         }
 
         const targetUser = await prisma.users.findUnique({ where: { id: userId } });
@@ -281,10 +292,16 @@ const orgRoutes = new Hono<HonoInstanceContext>()
         }
 
         if (ORG_ROLE_WEIGHT[callerRole] <= ORG_ROLE_WEIGHT[target.role]) {
-          return c.json(apiErrorResponse("FORBIDDEN", "You cannot change the role of a member with equal or higher privileges"), 403);
+          return c.json(
+            apiErrorResponse("FORBIDDEN", "You cannot change the role of a member with equal or higher privileges"),
+            403
+          );
         }
         if (ORG_ROLE_WEIGHT[newRole] >= ORG_ROLE_WEIGHT[callerRole]) {
-          return c.json(apiErrorResponse("FORBIDDEN", "You cannot assign a role equal to or higher than your own"), 403);
+          return c.json(
+            apiErrorResponse("FORBIDDEN", "You cannot assign a role equal to or higher than your own"),
+            403
+          );
         }
 
         const updated = await prisma.orgMembership.update({
@@ -324,7 +341,10 @@ const orgRoutes = new Hono<HonoInstanceContext>()
         }
 
         if (ORG_ROLE_WEIGHT[callerRole] <= ORG_ROLE_WEIGHT[target.role]) {
-          return c.json(apiErrorResponse("FORBIDDEN", "You cannot remove a member with equal or higher privileges"), 403);
+          return c.json(
+            apiErrorResponse("FORBIDDEN", "You cannot remove a member with equal or higher privileges"),
+            403
+          );
         }
 
         const updated = await prisma.orgMembership.update({
@@ -357,7 +377,10 @@ const orgRoutes = new Hono<HonoInstanceContext>()
           currentUser.systemRole === SystemRole.SUPERADMIN ? OrgRole.OWNER : (callerMembership?.role ?? OrgRole.MEMBER);
 
         if (ORG_ROLE_WEIGHT[role] >= ORG_ROLE_WEIGHT[callerRole]) {
-          return c.json(apiErrorResponse("FORBIDDEN", "You cannot invite someone with a role equal to or higher than your own"), 403);
+          return c.json(
+            apiErrorResponse("FORBIDDEN", "You cannot invite someone with a role equal to or higher than your own"),
+            403
+          );
         }
 
         const token = crypto.randomBytes(32).toString("hex");
@@ -389,18 +412,37 @@ const orgRoutes = new Hono<HonoInstanceContext>()
         const prisma = c.get("prisma");
 
         const invite = await prisma.orgInvite.findUnique({ where: { token } });
-        if (!invite || invite.orgId !== orgId) {
+        if (!invite || invite?.orgId !== orgId) {
           return c.json(apiErrorResponse("NOT_FOUND", "Invite not found"), 404);
         }
         if (invite.status !== "PENDING") {
           return c.json(apiErrorResponse("BAD_REQUEST", `Invite has already been ${invite.status.toLowerCase()}`), 400);
         }
-        if (invite.expiresAt < new Date()) {
+        if (invite.expiresAt.valueOf() < Date.now()) {
           await prisma.orgInvite.update({ where: { token }, data: { status: "EXPIRED" } });
           return c.json(apiErrorResponse("BAD_REQUEST", "Invite has expired"), 400);
         }
         if (invite.email && currentUser.email !== invite.email) {
           return c.json(apiErrorResponse("FORBIDDEN", "This invite was not issued to you"), 403);
+        }
+
+        // If this is a claim invite for a provisional user, link their account instead of creating membership
+        if (invite.provisionalUserId) {
+          const provisional = await prisma.users.findUnique({
+            where: { id: invite.provisionalUserId },
+            select: { id: true, accountStatus: true }
+          });
+          if (provisional?.accountStatus !== AccountStatus.PROVISIONAL) {
+            return c.json(apiErrorResponse("BAD_REQUEST", "This account has already been claimed"), 400);
+          }
+          const [user] = await prisma.$transaction([
+            prisma.users.update({
+              where: { id: invite.provisionalUserId },
+              data: { authUserId: currentUser.id, accountStatus: AccountStatus.ACTIVE }
+            }),
+            prisma.orgInvite.update({ where: { token }, data: { status: "ACCEPTED" } })
+          ]);
+          return c.json(apiSuccessResponse(user, "Account claimed — your profile is now linked to this invite"), 200);
         }
 
         const alreadyMember = await prisma.orgMembership.findFirst({ where: { orgId, userId: currentUser.id } });
@@ -535,7 +577,10 @@ const orgRoutes = new Hono<HonoInstanceContext>()
         }));
 
         return c.json(
-          apiSuccessResponse({ items: events, meta: buildPaginationMeta(page, limit, total) }, "Activity log retrieved successfully"),
+          apiSuccessResponse(
+            { items: events, meta: buildPaginationMeta(page, limit, total) },
+            "Activity log retrieved successfully"
+          ),
           200
         );
       } catch (error) {
@@ -594,6 +639,105 @@ const orgRoutes = new Hono<HonoInstanceContext>()
         return c.json(apiSuccessResponse(settings, "Settings updated successfully"), 200);
       } catch (error) {
         return handleAPiError(error, "Unexpected error updating settings");
+      }
+    }
+  )
+  // POST /orgs/:orgId/workers/provision — create provisional user + org membership
+  .post(
+    ":orgId/workers/provision",
+    requireAuth(),
+    customValidator("param", organizationParamsSchema),
+    requireOrgRole(OrgRole.MANAGER),
+    customValidator("json", provisionOrgWorkerSchema),
+    describeRoute(provisionOrgWorkerDocs),
+    async (c) => {
+      try {
+        const { orgId } = c.req.valid("param");
+        const { role, email, ...userData } = c.req.valid("json");
+        const currentUser = c.get("user")!;
+        const prisma = c.get("prisma");
+
+        const callerMembership = await prisma.orgMembership.findFirst({ where: { userId: currentUser.id, orgId } });
+        const callerRole =
+          currentUser.systemRole === SystemRole.SUPERADMIN ? OrgRole.OWNER : (callerMembership?.role ?? OrgRole.MEMBER);
+
+        if (ORG_ROLE_WEIGHT[role] >= ORG_ROLE_WEIGHT[callerRole]) {
+          return c.json(
+            apiErrorResponse("FORBIDDEN", "You cannot assign a role equal to or higher than your own"),
+            403
+          );
+        }
+
+        if (email) {
+          const existing = await prisma.users.findFirst({ where: { email } });
+          if (existing) {
+            return c.json(apiErrorResponse("CONFLICT", "A user with this email already exists"), 409);
+          }
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+          const user = await tx.users.create({
+            data: { ...userData, email, accountStatus: AccountStatus.PROVISIONAL }
+          });
+          const membership = await tx.orgMembership.create({
+            data: { orgId, userId: user.id, role, invitedBy: currentUser.id, invitedAt: new Date() }
+          });
+          return { user, membership };
+        });
+
+        return c.json(apiSuccessResponse(result, "Worker provisioned successfully"), 201);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error occurred while provisioning worker");
+      }
+    }
+  )
+  // POST /orgs/:orgId/members/:userId/invite-to-claim — send a claim invite to a provisional user
+  .post(
+    ":orgId/members/:userId/invite-to-claim",
+    requireAuth(),
+    customValidator("param", organizationParamsSchema.extend(orgMemberUserParamsSchema.shape)),
+    requireOrgRole(OrgRole.MANAGER),
+    describeRoute(inviteToClaimDocs),
+    async (c) => {
+      try {
+        const { orgId, userId } = c.req.valid("param");
+        const currentUser = c.get("user")!;
+        const prisma = c.get("prisma");
+
+        const target = await prisma.users.findUnique({ where: { id: userId } });
+        if (!target) {
+          return c.json(apiErrorResponse("NOT_FOUND", "User not found"), 404);
+        }
+        if (target.accountStatus !== AccountStatus.PROVISIONAL) {
+          return c.json(apiErrorResponse("BAD_REQUEST", "User already has an active account"), 400);
+        }
+        if (!target.email && !target.phoneNumber) {
+          return c.json(
+            apiErrorResponse("BAD_REQUEST", "Provisional user has no email or phone to send the invite to"),
+            400
+          );
+        }
+
+        const token = crypto.randomBytes(32).toString("hex");
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+        const invite = await prisma.orgInvite.create({
+          data: {
+            orgId,
+            invitedBy: currentUser.id,
+            email: target.email,
+            phone: target.phoneNumber,
+            role: OrgRole.MEMBER,
+            token,
+            expiresAt,
+            provisionalUserId: userId
+          }
+        });
+
+        // In production: send email/SMS with claim link containing the token
+        return c.json(apiSuccessResponse(invite, "Claim invite created successfully"), 201);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error occurred while creating claim invite");
       }
     }
   );

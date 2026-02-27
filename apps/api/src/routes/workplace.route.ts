@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { type HonoInstanceContext } from "../_types/index.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { requireOrgRole, requireWorkplaceRole } from "../middlewares/roles.middleware.js";
-import { OrgRole, SystemRole, WorkplaceRole } from "../lib/generated/prisma/enums.js";
+import { AccountStatus, OrgRole, SystemRole, WorkplaceRole } from "../lib/generated/prisma/enums.js";
 import withPrisma from "../lib/prisma-client.js";
 import { customValidator } from "../helpers/validation.helpers.js";
 import {
@@ -10,6 +10,7 @@ import {
   createWorkplaceSchema,
   geofenceSchema,
   imageParamsSchema,
+  provisionWorkplaceWorkerSchema,
   setGeofenceSchema,
   updateWorkPlaceSchema,
   updateWorkerRoleSchema,
@@ -36,6 +37,7 @@ import {
   getSingleWorkplaceDocs,
   getWorkersOfWorkplaceDocs,
   getWorkplaceStatsDocs,
+  provisionWorkplaceWorkerDocs,
   setGeofenceDocs,
   unassignWorkerDocs,
   updateWorkerRoleDocs,
@@ -44,7 +46,7 @@ import {
   getWorkplaceImagesDocs
 } from "../docs/workplaces.docs.js";
 import { uploadToCloudinary, deleteFromCloudinary } from "../lib/cloudinary.js";
-import { WORKPLACE_ROLE_WEIGHT } from "../_constants/role-weights.constants.js";
+import { ORG_ROLE_WEIGHT, WORKPLACE_ROLE_WEIGHT } from "../_constants/role-weights.constants.js";
 
 const workplaceRoutes = new Hono<HonoInstanceContext>()
   .use(withPrisma)
@@ -749,6 +751,74 @@ const workplaceRoutes = new Hono<HonoInstanceContext>()
         return c.json(apiSuccessResponse(deleted, "Geofence deleted successfully"), 200);
       } catch (error) {
         return handleAPiError(error, "Unexpected error deleting geofence");
+      }
+    }
+  )
+  // POST /:workplaceId/workers/provision — create provisional user + org membership + workplace assignment
+  .post(
+    ":workplaceId/workers/provision",
+    requireAuth(),
+    customValidator("param", workplaceParamsSchema.extend(organizationParamsSchema.shape)),
+    requireWorkplaceRole(WorkplaceRole.SUPERVISOR),
+    customValidator("json", provisionWorkplaceWorkerSchema),
+    describeRoute(provisionWorkplaceWorkerDocs),
+    async (c) => {
+      try {
+        const { workplaceId, orgId } = c.req.valid("param");
+        const { orgRole, workplaceRole, email, ...userData } = c.req.valid("json");
+        const currentUser = c.get("user")!;
+        const prisma = c.get("prisma");
+
+        // Caller's org role — used to guard the org membership role assignment
+        const callerOrgMembership = await prisma.orgMembership.findFirst({
+          where: { userId: currentUser.id, orgId }
+        });
+        const callerOrgRole =
+          currentUser.systemRole === SystemRole.SUPERADMIN ? OrgRole.OWNER : (callerOrgMembership?.role ?? OrgRole.MEMBER);
+
+        if (ORG_ROLE_WEIGHT[orgRole] >= ORG_ROLE_WEIGHT[callerOrgRole]) {
+          return c.json(apiErrorResponse("FORBIDDEN", "You cannot assign an org role equal to or higher than your own"), 403);
+        }
+
+        // Caller's workplace role — guard the workplace role assignment
+        const callerAssignment = await prisma.usersOnWorkplaces.findUnique({
+          where: { userId_workplaceId: { userId: currentUser.id, workplaceId } }
+        });
+        const callerWorkplaceRole =
+          currentUser.systemRole === SystemRole.SUPERADMIN
+            ? WorkplaceRole.WORKPLACE_MANAGER
+            : (callerAssignment?.workplaceRole ?? WorkplaceRole.VISITOR);
+
+        if (WORKPLACE_ROLE_WEIGHT[workplaceRole] >= WORKPLACE_ROLE_WEIGHT[callerWorkplaceRole]) {
+          return c.json(
+            apiErrorResponse("FORBIDDEN", "You cannot assign a workplace role equal to or higher than your own"),
+            403
+          );
+        }
+
+        if (email) {
+          const existing = await prisma.users.findFirst({ where: { email } });
+          if (existing) {
+            return c.json(apiErrorResponse("CONFLICT", "A user with this email already exists"), 409);
+          }
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+          const user = await tx.users.create({
+            data: { ...userData, email, accountStatus: AccountStatus.PROVISIONAL }
+          });
+          const orgMembership = await tx.orgMembership.create({
+            data: { orgId, userId: user.id, role: orgRole, invitedBy: currentUser.id, invitedAt: new Date() }
+          });
+          const assignment = await tx.usersOnWorkplaces.create({
+            data: { userId: user.id, workplaceId, workplaceRole, assignedById: currentUser.id }
+          });
+          return { user, orgMembership, assignment };
+        });
+
+        return c.json(apiSuccessResponse(result, "Worker provisioned and assigned successfully"), 201);
+      } catch (error) {
+        return handleAPiError(error, "Unexpected error occurred while provisioning worker");
       }
     }
   );

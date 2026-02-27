@@ -1,7 +1,7 @@
 import type { DescribeRouteOptions } from "hono-openapi";
 import { ORGS_TAG, WORKPLACES_TAG } from "../_constants/index.js";
 import { docsErrorResponse, docsJsonContent, paginatedDocsJsonContent } from "../helpers/docs.helper.js";
-import { orgInviteSchema, orgMembershipSchema, orgSchema, orgSettingsSchema } from "../schemas/orgs.schema.js";
+import { orgInviteSchema, orgMembershipSchema, orgSchema, orgSettingsSchema, provisionOrgWorkerSchema } from "../schemas/orgs.schema.js";
 import { userSchema } from "../schemas/user.schema.js";
 import { workplaceSchema } from "../schemas/workplace.schema.js";
 
@@ -275,5 +275,43 @@ export const getOrgWorkplacesDocs: DescribeRouteOptions = {
     ...docsErrorResponse(403, "Forbidden - Insufficient organization privileges"),
     ...docsErrorResponse(404, "Organization not found"),
     ...docsErrorResponse(500, "Unexpected error occurred while retrieving organization workplaces")
+  }
+};
+
+export const provisionOrgWorkerDocs: DescribeRouteOptions = {
+  tags: [ORGS_TAG],
+  summary: "/orgs/{orgId}/workers/provision - Provision a new worker",
+  description: "Create a provisional user account and immediately add them as an org member. The user has no login credentials until they claim their account via sign-up.",
+  responses: {
+    201: {
+      description: "Worker provisioned successfully",
+      content: docsJsonContent(
+        userSchema.pick({ id: true, name: true, email: true, phoneNumber: true, accountStatus: true }).extend({
+          membership: orgMembershipSchema
+        })
+      )
+    },
+    ...docsErrorResponse(400, "Invalid request body"),
+    ...docsErrorResponse(401, "Unauthorized - User must be logged in"),
+    ...docsErrorResponse(403, "Forbidden - Insufficient organization privileges or role escalation attempt"),
+    ...docsErrorResponse(409, "A user with this email already exists"),
+    ...docsErrorResponse(500, "Unexpected error occurred while provisioning worker")
+  }
+};
+
+export const inviteToClaimDocs: DescribeRouteOptions = {
+  tags: [ORGS_TAG],
+  summary: "/orgs/{orgId}/members/{userId}/invite-to-claim - Invite a provisional user to create an account",
+  description: "Send a claim invite to a provisional user so they can sign up and link their existing profile. The invite token can be passed as claimToken during sign-up.",
+  responses: {
+    201: {
+      description: "Claim invite created successfully",
+      content: docsJsonContent(orgInviteSchema)
+    },
+    ...docsErrorResponse(400, "User is not a provisional account or has no contact info"),
+    ...docsErrorResponse(401, "Unauthorized - User must be logged in"),
+    ...docsErrorResponse(403, "Forbidden - Insufficient organization privileges"),
+    ...docsErrorResponse(404, "Member not found"),
+    ...docsErrorResponse(500, "Unexpected error occurred while creating claim invite")
   }
 };

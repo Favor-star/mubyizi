@@ -30,6 +30,10 @@ model Users {
     documents         UserDocument[]
     emergencyContacts EmergencyContact[]
 
+    // Account status (provisional = created by manager, no login credentials)
+    accountStatus AccountStatus @default(ACTIVE)
+    authUserId    String?       @unique // better-auth User.id, set when a provisional account is claimed
+
     // Audit
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt
@@ -38,6 +42,7 @@ model Users {
     @@index([email])
     @@index([systemRole])
     @@index([occupationCategory])
+    @@index([accountStatus])
 }
 
 // ── ENUMS: USERS ─────────────────────────────────────────────
@@ -90,6 +95,11 @@ enum SystemRole {
     SUPERADMIN // Full platform access, bypasses all checks
     SUPPORT    // Read-only access to all organisations
     USER       // Regular user, access based on org membership
+}
+
+enum AccountStatus {
+    ACTIVE      // Has better-auth credentials, can log in
+    PROVISIONAL // Created by manager, no login credentials yet
 }
 
 // ── WORKPLACE ROLES ──────────────────────────────────────────

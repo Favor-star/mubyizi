@@ -1,5 +1,5 @@
 import z from "zod";
-import { JobCategory, SkillLevel, SystemRole } from "../lib/generated/prisma/enums.js";
+import { AccountStatus, JobCategory, SkillLevel, SystemRole } from "../lib/generated/prisma/enums.js";
 import { paginationQuerySchema } from "./pagination.schema.js";
 
 export const userSchema = z.object({
@@ -10,8 +10,10 @@ export const userSchema = z.object({
   skillLevel: z.enum(SkillLevel).default(SkillLevel.INTERMEDIATE),
   systemRole: z.enum(SystemRole).default(SystemRole.USER),
   phoneNumber: z.string().nullish(),
-  email: z.email(),
+  email: z.email().nullish(),
   profileImage: z.string().nullish(),
+  accountStatus: z.enum(AccountStatus).default(AccountStatus.ACTIVE),
+  authUserId: z.string().nullish(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
   lastLoginAt: z.iso.datetime().nullish()

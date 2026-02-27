@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { Industry, OrgRole, OrgStatus, OrgType } from "../lib/generated/prisma/enums.js";
+import { Industry, JobCategory, OrgRole, OrgStatus, OrgType, SkillLevel } from "../lib/generated/prisma/enums.js";
 
 export const orgSchema = z.object({
   id: z.ulid(),
@@ -38,7 +38,6 @@ export const orgMembershipSchema = z.object({
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime()
 });
-
 // Member management
 export const orgMemberUserParamsSchema = z.object({
   userId: z.ulid("Invalid user ID")
@@ -80,9 +79,20 @@ export const orgInviteSchema = z.object({
 // Settings (subset of Org fields)
 export const orgSettingsSchema = z.object({
   timezone: z.string().optional(),
-  logoUrl: z.string().url().optional(),
-  website: z.string().url().optional(),
+  logoUrl: z.url().optional(),
+  website: z.url().optional(),
   addressLine: z.string().optional(),
   city: z.string().optional(),
   country: z.string().optional()
+});
+
+// Provisional user provisioning
+export const provisionOrgWorkerSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  phoneNumber: z.string().optional(),
+  email: z.email().optional(),
+  occupation: z.string().optional(),
+  occupationCategory: z.enum(JobCategory).optional(),
+  skillLevel: z.enum(SkillLevel).optional(),
+  role: z.enum(OrgRole).default(OrgRole.MEMBER)
 });

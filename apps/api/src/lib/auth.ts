@@ -23,9 +23,15 @@ export const auth = betterAuth({
   plugins: [
     ...(options.plugins ?? []),
     customSession(async ({ user, session }, ctx) => {
+      // Look up by direct id OR by authUserId (for claimed provisional accounts).
+      // We return userData.id so the session always carries the stable app ULID,
+      // not the better-auth generated id — keeping all FK lookups consistent.
       const userData = await prisma.users.findFirst({
-        where: { id: user.id },
+        where: {
+          OR: [{ id: user.id }, { authUserId: user.id }]
+        },
         select: {
+          id: true,
           systemRole: true
         }
       });
@@ -33,6 +39,7 @@ export const auth = betterAuth({
       return {
         user: {
           ...user,
+          id: userData?.id ?? user.id,
           systemRole: userData?.systemRole ?? SystemRole.USER
         },
         session
