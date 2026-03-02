@@ -1,7 +1,7 @@
 import { validator } from "hono-openapi";
 import type { ValidationTargets } from "hono";
 import type { z } from "zod";
-import type { ValidationErrorProps } from "@/src/_types/index.js";
+import type { ValidationErrorProps } from "../_types/index.js";
 
 const formatValidationErrors = (error: ValidationErrorProps[]) => {
   return error.map(({ path, message }) => {

@@ -65,7 +65,7 @@ const usersRoutes = new Hono<HonoInstanceContext>()
       try {
         const prisma = c.get("prisma");
         const currentUser = c.get("user")!;
-        const {  format } = c.req.valid("query");
+        const { format } = c.req.valid("query");
 
         // SUPERADMIN or MANAGER in orgId
         if (currentUser.systemRole !== SystemRole.SUPERADMIN) {
@@ -720,7 +720,7 @@ const usersRoutes = new Hono<HonoInstanceContext>()
         }
         const { documentType, title, expiresAt, notes, file } = c.req.valid("form");
         const fileBuffer = Buffer.from(await file.arrayBuffer());
-        const { url, publicId } = await uploadToCloudinary(fileBuffer, `user-documents/${id}`, );
+        const { url, publicId } = await uploadToCloudinary(fileBuffer, `user-documents/${id}`);
 
         const doc = await prisma.userDocument.create({
           data: {
@@ -763,7 +763,7 @@ const usersRoutes = new Hono<HonoInstanceContext>()
         if (doc.publicId) {
           await deleteFromCloudinary(doc.publicId).catch(() => {
             // Log but don't fail if Cloudinary delete fails
-              console.warn(`Failed to delete document from Cloudinary with publicId ${doc.publicId}`);
+            console.warn(`Failed to delete document from Cloudinary with publicId ${doc.publicId}`);
           });
         }
 
@@ -902,4 +902,5 @@ const usersRoutes = new Hono<HonoInstanceContext>()
     }
   );
 
+export type UsersRouteType = typeof usersRoutes;
 export default usersRoutes;

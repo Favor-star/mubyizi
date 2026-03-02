@@ -6,15 +6,19 @@
   "tailwind": {
     "config": "",
     "css": "../../packages/ui/src/styles/globals.css",
-    "baseColor": "neutral",
-    "cssVariables": true
+    "baseColor": "zinc",
+    "cssVariables": true,
+    "prefix": ""
   },
-  "iconLibrary": "lucide",
+  "iconLibrary": "tabler",
   "aliases": {
     "components": "@/components",
     "hooks": "@/hooks",
     "lib": "@/lib",
     "utils": "@workspace/ui/lib/utils",
     "ui": "@workspace/ui/components"
-  }
+  },
+  "menuColor": "default",
+  "menuAccent": "subtle",
+  "registries": {}
 }

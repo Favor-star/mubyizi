@@ -8,12 +8,25 @@ import { auth } from "./lib/auth.js";
 import { type HonoInstanceContext } from "./_types/index.js";
 import { HTTPException } from "hono/http-exception";
 import { apiErrorResponse } from "./helpers/api.helper.js";
+import { cors } from "hono/cors";
 
+const port = Number(process.env.PORT) || 3000;
+const frontendUrl = process.env.NODE_ENV === "production" ? process.env.PROD_FRONTEND_URL! : "http://localhost:3000";
 const app = new Hono<HonoInstanceContext>({
   strict: false
 })
   .basePath(API_BASE_PATH)
   .use(logger())
+  .use(
+    "*",
+    cors({
+      origin: [frontendUrl],
+      allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      exposeHeaders: ["Content-Length"],
+      credentials: true,
+      maxAge: 86400
+    })
+  )
   .use("*", async (c, next) => {
     const session = await auth.api.getSession({ headers: c.req.raw.headers });
     if (!session) {
@@ -34,8 +47,6 @@ const app = new Hono<HonoInstanceContext>({
     }
     return c.json(apiErrorResponse(err, "An unexpected error occurred on the server."), 500);
   });
-
-const port = Number(process.env.PORT) || 3000;
 
 serve(
   {
