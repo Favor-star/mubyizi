@@ -1,41 +1,51 @@
 "use client";
 
 import { type Icon } from "@tabler/icons-react";
-
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
 } from "@workspace/ui/components/sidebar";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 
 export function NavMain({
-  items
+  items,
 }: Readonly<{
   items: readonly {
     label: string;
-    href: string;
+    path: string;
     icon?: Icon;
   }[];
 }>) {
   const pathname = usePathname();
+  const params = useParams<{ orgId?: string }>();
+  const orgId = params.orgId ?? "";
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton tooltip={item.label} className="py-2 h-auto" asChild isActive={pathname === item.href}>
-                <Link href={item.href}>
-                  {item.icon && <item.icon />}
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {items.map((item) => {
+            const href = `/${orgId}${item.path}`;
+            return (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton
+                  tooltip={item.label}
+                  className="py-2 h-auto"
+                  asChild
+                  isActive={pathname === href}
+                >
+                  <Link href={href}>
+                    {item.icon && <item.icon />}
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

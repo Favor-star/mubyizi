@@ -1,11 +1,12 @@
 "use client";
+
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
-  SidebarSeparator
+  SidebarSeparator,
 } from "@workspace/ui/components/sidebar";
 import {
   IconLayoutDashboard,
@@ -16,34 +17,29 @@ import {
   IconSettings,
   IconPlus,
   IconBriefcase2,
-  IconHelp
+  IconHelp,
 } from "@tabler/icons-react";
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";
 import { NavUser } from "./nav-user";
 import { Button } from "@workspace/ui/components/button";
 import { OrgSwitcher } from "./org-switcher";
+import { MOCK_ORGS } from "@/data/mock";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
-  { href: "/workplaces", label: "Workplaces", icon: IconBuildingCommunity },
-  { href: "/workforce", label: "Workforce", icon: IconUsers },
-  { href: "/financials", label: "Financials", icon: IconWallet },
-  { href: "/reports", label: "Reports", icon: IconChartBar }
+  { path: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
+  { path: "/workplaces", label: "Workplaces", icon: IconBuildingCommunity },
+  { path: "/workforce", label: "Workforce", icon: IconUsers },
+  { path: "/financials", label: "Financials", icon: IconWallet },
+  { path: "/reports", label: "Reports", icon: IconChartBar },
 ] as const;
+
 const NAV_SECONDARY_ITEMS = [
   { title: "Settings", url: "#", icon: IconSettings },
-  {
-    title: "Support & Community",
-    url: "#",
-    icon: IconUsers
-  },
-  {
-    title: "Get help",
-    url: "#",
-    icon: IconHelp
-  }
+  { title: "Support & Community", url: "#", icon: IconUsers },
+  { title: "Get help", url: "#", icon: IconHelp },
 ] as const;
+
 export function AppSidebar() {
   return (
     <Sidebar>
@@ -60,7 +56,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <OrgSwitcher orgs={[{ name: "Acme Corp. Holdings", logo: IconBuildingCommunity }]} />
+          <OrgSwitcher orgs={MOCK_ORGS} />
         </SidebarGroup>
         <SidebarSeparator />
         <NavMain items={NAV_ITEMS} />

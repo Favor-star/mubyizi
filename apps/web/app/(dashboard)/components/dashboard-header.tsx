@@ -1,15 +1,16 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { IconSearch, IconBell, IconHelp, IconChevronRight } from "@tabler/icons-react";
+import { IconBell, IconHelp, IconChevronRight } from "@tabler/icons-react";
 import { ModeToggle } from "@/shared/components/mode-toggle";
 import { SidebarTrigger } from "@workspace/ui/components/sidebar";
 import { Separator } from "@workspace/ui/components/separator";
 import { Button } from "@workspace/ui/components/button";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@workspace/ui/components/input-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
 
 import { ProfileDropdown } from "@/shared/components/profile-dropdown";
+import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
+import { SearchDialog } from "./search-dialog";
 const SEGMENT_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
   workplaces: "Workplaces",
@@ -21,7 +22,9 @@ const SEGMENT_LABELS: Record<string, string> = {
 
 export function DashboardsHeader() {
   const pathname = usePathname();
-  const segment = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
+  const isMobile = useIsMobile();
+  const segments = pathname.split("/").filter(Boolean);
+  const segment = segments[1] ?? "dashboard";
   const label = SEGMENT_LABELS[segment] ?? "Dashboard";
 
   return (
@@ -37,20 +40,14 @@ export function DashboardsHeader() {
 
       {/* Actions */}
       <div className="flex items-center gap-1">
-        <InputGroup className="max-w-xs hidden sm:flex">
-          <InputGroupInput placeholder="Search..." />
-          <InputGroupAddon>
-            <IconSearch />
-          </InputGroupAddon>
-          <InputGroupAddon align="inline-end">no results</InputGroupAddon>
-        </InputGroup>
+        <SearchDialog />
 
         <Button aria-label="Notifications" size={"icon"} variant={"ghost"} className="relative">
           <IconBell className="h-4 w-4" />
           <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 bg-destructive" />
         </Button>
 
-        <Button aria-label="Help" size={"icon"} variant={"ghost"}>
+        <Button aria-label="Help" size={"icon"} variant={"ghost"} className="hidden sm:flex">
           <IconHelp className="h-4 w-4" />
         </Button>
 
