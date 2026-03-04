@@ -39,7 +39,7 @@ export function NavMain({
                   isActive={pathname === href}
                 >
                   <Link href={href}>
-                    {item.icon && <item.icon />}
+                    {item.icon && <item.icon strokeWidth={1.8} />}
                     <span>{item.label}</span>
                   </Link>
                 </SidebarMenuButton>

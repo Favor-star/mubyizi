@@ -1,23 +1,50 @@
-import { Skeleton } from "@workspace/ui/components/skeleton";
+"use client";
+import { MOCK_WORKPLACES } from "@/data/mock";
+import { WorkplaceCard } from "./components/workplace-card";
+import { IconChevronDown, IconPlus } from "@tabler/icons-react";
+import { Button } from "@workspace/ui/components/button";
+import { ButtonGroup } from "@workspace/ui/components/button-group";
+import { useParams } from "next/navigation";
 
 export default function WorkplacesPage() {
+  const params = useParams();
+  const orgId = params.orgId as string;
+
   return (
-    <section>
-      <div className="grid grid-cols-4 h-40 gap-5">
-        <Skeleton />
-        <Skeleton />
-        <Skeleton />
-        <Skeleton />
-      </div>
-      <div className="flex flex-col gap-4 mt-4">
-        <div className="grid grid-cols-[1fr_350px] gap-4">
-          <Skeleton className="h-40" />
-          <Skeleton className="h-40" />
+    <section className="space-y-3 w-full">
+      <hgroup className="flex items-center justify-between">
+        <header>
+          <h1 className="text-xl font-semibold tracking-tight">Workforce management</h1>
+          <p className="text-sm text-muted-foreground">Manage profiles, assignments, and check real-time statuses</p>
+        </header>
+        <div className="flex gap-3">
+          <ButtonGroup>
+            <Button size={"lg"}>
+              <IconPlus />
+              Add worker
+            </Button>
+            <Button size={"icon-lg"}>
+              <IconChevronDown />
+            </Button>
+          </ButtonGroup>
         </div>
-        <Skeleton className="h-50" />
-        <Skeleton className="h-20" />
-        <Skeleton className="h-50" />
-      </div>
+      </hgroup>
+      {/* <section className="pt-3">
+        <SearchHeader
+          searchQuery=""
+          onSearchChange={() => {}}
+          searchPlaceholder="Search by name, location..."
+          resultCount={0}
+          filters={[]}
+          onFilterChange={() => {}}
+          actions={null}
+        />
+      </section> */}
+      <section className="w-full grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-4">
+        {MOCK_WORKPLACES[orgId]?.map((workplace, i) => (
+          <WorkplaceCard key={workplace.id} workplace={workplace} orgId={orgId} />
+        ))}
+      </section>
     </section>
   );
 }

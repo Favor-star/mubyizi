@@ -18,6 +18,7 @@ import {
   IconPlus,
   IconBriefcase2,
   IconHelp,
+  IconClockCheck,
 } from "@tabler/icons-react";
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";
@@ -28,6 +29,7 @@ import { MOCK_ORGS } from "@/data/mock";
 
 const NAV_ITEMS = [
   { path: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
+  { path: "/attendance", label: "Attendance", icon: IconClockCheck },
   { path: "/workplaces", label: "Workplaces", icon: IconBuildingCommunity },
   { path: "/workforce", label: "Workforce", icon: IconUsers },
   { path: "/financials", label: "Financials", icon: IconWallet },
@@ -49,8 +51,12 @@ export function AppSidebar() {
             <IconBriefcase2 className="h-4 w-4 text-sidebar-primary-foreground" />
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold text-sidebar-foreground">Mubyizi</span>
-            <span className="text-[10px] text-muted-foreground">Owner Admin</span>
+            <span className="text-sm font-semibold text-sidebar-foreground">
+              Mubyizi
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              Owner Admin
+            </span>
           </div>
         </div>
       </SidebarHeader>
@@ -70,7 +76,11 @@ export function AppSidebar() {
           </Button>
         </div>
         <NavUser
-          user={{ name: "Charlie Nguyen", email: "favour@gmail.com", avatar: "https://github.com/shadcn.png" }}
+          user={{
+            name: "Charlie Nguyen",
+            email: "favour@gmail.com",
+            avatar: "https://github.com/shadcn.png",
+          }}
         />
       </SidebarFooter>
     </Sidebar>

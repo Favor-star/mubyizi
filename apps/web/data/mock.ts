@@ -335,3 +335,34 @@ export const MOCK_PENDING_ATTENDANCE: Record<string, PendingAttendanceData> = {
     }
   }
 };
+
+// ---------------------------------------------------------------------------
+// SITES data  —  mirrors GET /api/v1/orgs/:orgId/sites
+// ---------------------------------------------------------------------------
+
+export type Workplace = {
+  id: string;
+  name: string;
+  location: string;
+  activeWorkplaces: number;
+};
+
+export const MOCK_WORKPLACES: Record<string, Workplace[]> = {
+  org_acme_001: [
+    { id: "site_001", name: "Downtown Office", location: "123 Main St, Cityville", activeWorkplaces: 5 },
+    { id: "site_002", name: "Uptown Warehouse", location: "456 Industrial Rd, Cityville", activeWorkplaces: 3 },
+    { id: "site_007", name: "Suburban Branch", location: "789 Suburb Ln, Cityville", activeWorkplaces: 4 },
+    { id: "site_008", name: "Remote Site", location: "N/A - Remote Workers", activeWorkplaces: 2 },
+    { id: "site_009", name: "Rooftop Workspace", location: "123 Main St, Cityville - Rooftop", activeWorkplaces: 1 },
+    { id: "site_010", name: "Mobile Unit", location: "Varies - Mobile Workforce", activeWorkplaces: 3 },
+    { id: "site_011", name: "Satellite Office", location: "321 Side St, Cityville", activeWorkplaces: 2 }
+  ],
+  org_build_002: [
+    { id: "site_003", name: "Construction Site A", location: "789 Construction Ave, Buildtown", activeWorkplaces: 4 },
+    { id: "site_004", name: "Construction Site B", location: "321 Development Blvd, Buildtown", activeWorkplaces: 2 }
+  ],
+  org_metro_003: [
+    { id: "site_005", name: "Logistics Hub 1", location: "654 Logistics Ln, Metropolis", activeWorkplaces: 6 },
+    { id: "site_006", name: "Logistics Hub 2", location: "987 Distribution Dr, Metropolis", activeWorkplaces: 8 }
+  ]
+};
