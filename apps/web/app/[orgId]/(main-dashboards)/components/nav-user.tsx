@@ -1,10 +1,10 @@
 "use client";
 
+import { ProfileDropdown } from "@/shared/components/profile-dropdown";
 import { IconDotsVertical } from "@tabler/icons-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@workspace/ui/components/sidebar";
-import { ProfileDropdown } from "../../../shared/components/profile-dropdown";
 
 export function NavUser({
   user
