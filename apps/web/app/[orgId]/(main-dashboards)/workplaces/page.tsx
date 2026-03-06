@@ -40,7 +40,7 @@ export default function WorkplacesPage() {
           actions={null}
         />
       </section> */}
-      <section className="w-full grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-4">
+      <section className="w-full grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4">
         {MOCK_WORKPLACES[orgId]?.map((workplace, i) => (
           <WorkplaceCard key={workplace.id} workplace={workplace} orgId={orgId} />
         ))}

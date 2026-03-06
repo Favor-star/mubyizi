@@ -27,7 +27,7 @@ export const WorkplaceCard = ({ workplace, orgId }: { workplace: Workplace; orgI
         alt="Event cover"
         className="relative z-20 aspect-video w-full object-cover brightness-60 grayscale dark:brightness-40"
       />
-      <Badge variant="secondary" className="absolute z-30 top-2 right-2  text-green-700">
+      <Badge variant="default" className="absolute z-30 top-2 right-2 ">
         <IconChecks data-icon="inline-start" />
         Active
       </Badge>

@@ -1,7 +1,6 @@
 import { ModeToggle } from "@/shared/components/mode-toggle";
 import {
   IconArrowLeft,
-  IconArrowNarrowRight,
   IconCommand,
   IconEdit,
   IconMapPin,
@@ -25,7 +24,7 @@ import { Separator } from "@workspace/ui/components/separator";
 import Link from "next/link";
 import React from "react";
 
-export const SingleSiteHeader = () => {
+export const SingleSiteHeader = ({ activeTab }: { activeTab: string }) => {
   return (
     <section className="ps-8 py-4 pe-4 bg-sidebar">
       <hgroup className="w-full flex justify-between">
@@ -74,7 +73,9 @@ export const SingleSiteHeader = () => {
         </Breadcrumb>
         <div className="flex justify-between items-center ">
           <hgroup>
-            <h1 className="text-2xl font-bold mt-2">Site name</h1>
+            <h1 className="text-2xl font-bold mt-2">
+              Site name - <span className="capitalize">{activeTab}</span>
+            </h1>
             <div className="flex items-end gap-5">
               <p className="text-sm text-muted-foreground">
                 <span className="italic">Type: </span>
