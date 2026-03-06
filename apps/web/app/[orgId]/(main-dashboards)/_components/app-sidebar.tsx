@@ -6,7 +6,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
-  SidebarSeparator,
+  SidebarSeparator
 } from "@workspace/ui/components/sidebar";
 import {
   IconLayoutDashboard,
@@ -18,11 +18,11 @@ import {
   IconPlus,
   IconBriefcase2,
   IconHelp,
-  IconClockCheck,
+  IconClockCheck
 } from "@tabler/icons-react";
-import { NavMain } from "./nav-main";
-import { NavSecondary } from "./nav-secondary";
-import { NavUser } from "./nav-user";
+import { NavMain } from "../../_components/nav-main";
+import { NavSecondary } from "../../_components/nav-secondary";
+import { NavUser } from "../../_components/nav-user";
 import { Button } from "@workspace/ui/components/button";
 import { OrgSwitcher } from "./org-switcher";
 import { MOCK_ORGS } from "@/data/mock";
@@ -33,13 +33,13 @@ const NAV_ITEMS = [
   { path: "/workplaces", label: "Workplaces", icon: IconBuildingCommunity },
   { path: "/workforce", label: "Workforce", icon: IconUsers },
   { path: "/financials", label: "Financials", icon: IconWallet },
-  { path: "/reports", label: "Reports", icon: IconChartBar },
+  { path: "/reports", label: "Reports", icon: IconChartBar }
 ] as const;
 
 const NAV_SECONDARY_ITEMS = [
   { title: "Settings", url: "#", icon: IconSettings },
   { title: "Support & Community", url: "#", icon: IconUsers },
-  { title: "Get help", url: "#", icon: IconHelp },
+  { title: "Get help", url: "#", icon: IconHelp }
 ] as const;
 
 export function AppSidebar() {
@@ -51,12 +51,8 @@ export function AppSidebar() {
             <IconBriefcase2 className="h-4 w-4 text-sidebar-primary-foreground" />
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold text-sidebar-foreground">
-              Mubyizi
-            </span>
-            <span className="text-[10px] text-muted-foreground">
-              Owner Admin
-            </span>
+            <span className="text-sm font-semibold text-sidebar-foreground">Mubyizi</span>
+            <span className="text-[10px] text-muted-foreground">Owner Admin</span>
           </div>
         </div>
       </SidebarHeader>
@@ -79,7 +75,7 @@ export function AppSidebar() {
           user={{
             name: "Charlie Nguyen",
             email: "favour@gmail.com",
-            avatar: "https://github.com/shadcn.png",
+            avatar: "https://github.com/shadcn.png"
           }}
         />
       </SidebarFooter>

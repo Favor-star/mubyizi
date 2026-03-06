@@ -6,13 +6,13 @@ import {
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
+  SidebarMenuItem
 } from "@workspace/ui/components/sidebar";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 
 export function NavMain({
-  items,
+  items
 }: Readonly<{
   items: readonly {
     label: string;
@@ -32,12 +32,7 @@ export function NavMain({
             const href = `/${orgId}${item.path}`;
             return (
               <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton
-                  tooltip={item.label}
-                  className="py-2 h-auto"
-                  asChild
-                  isActive={pathname === href}
-                >
+                <SidebarMenuButton tooltip={item.label} className="py-2 h-auto" asChild isActive={pathname === href}>
                   <Link href={href}>
                     {item.icon && <item.icon strokeWidth={1.8} />}
                     <span>{item.label}</span>

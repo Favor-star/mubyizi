@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd C:\\\\Users\\\\EliabFavorIRANKOMEJE\\\\REPOS\\\\mubyizi\\\\apps\\\\api && pnpm add cloudinary qrcode xlsx 2>&1)"
+      "Bash(cd C:\\\\Users\\\\EliabFavorIRANKOMEJE\\\\REPOS\\\\mubyizi\\\\apps\\\\api && pnpm add cloudinary qrcode xlsx 2>&1)",
+      "Bash(find:*)"
     ]
   }
 }

@@ -28,7 +28,7 @@ export function DashboardsHeader() {
   const label = SEGMENT_LABELS[segment] ?? "Dashboard";
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4">
+    <header className="flex h-14 shrink-0 items-center justify-between bg-sidebar px-4">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm">
         <SidebarTrigger />
