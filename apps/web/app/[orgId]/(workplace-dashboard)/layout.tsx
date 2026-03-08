@@ -1,5 +1,5 @@
 import { SidebarProvider } from "@workspace/ui/components/sidebar";
-import { WorkplaceSidebar } from "./components/workplace-sidebar";
+import { WorkplaceSidebar } from "./_components/workplace-sidebar";
 
 export default function WorkPlaceDashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

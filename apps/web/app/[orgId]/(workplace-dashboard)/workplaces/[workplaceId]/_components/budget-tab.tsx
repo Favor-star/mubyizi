@@ -1,18 +1,20 @@
 "use client";
 
 import React from "react";
-import { IconBuildingBank, IconPigMoney, IconTrendingDown } from "@tabler/icons-react";
+import { IconBuildingBank, IconDownload, IconPigMoney, IconTrendingDown } from "@tabler/icons-react";
 import { DataTable } from "@/shared/components/data-table";
 import { DataTablePagination } from "@/shared/components/data-table-pagination";
 import { useGeneralTable } from "@/hooks/use-general-table";
 import { mockBudgetStats, mockCostBreakdown, mockPaginatedTransactions } from "./_mock/budget";
 import { budgetTransactionColumns } from "./budget-columns";
+import { StatCard } from "./stat-card";
+import { Button } from "@workspace/ui/components/button";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(cents / 100);
 }
 
@@ -29,7 +31,7 @@ export function BudgetTab() {
     totalItems: total,
     totalPages,
     hasNextPage: page < totalPages,
-    hasPrevPage: page > 1,
+    hasPrevPage: page > 1
   };
 
   const r = 28;
@@ -37,51 +39,29 @@ export function BudgetTab() {
   const offset = circ * (1 - stats.remainingPct / 100);
 
   return (
-    <div className="p-6 space-y-4">
-      {/* Stat cards */}
+    <section className="p-4 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Total Budget */}
-        <div className="bg-sidebar border rounded-lg p-4 flex items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-            <IconBuildingBank className="text-primary" strokeWidth={1.5} size={20} />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Total Budget</p>
-            <p className="text-lg font-semibold">{formatCurrency(stats.totalBudget)}</p>
-          </div>
-        </div>
+        <StatCard
+          title="Total Budget"
+          value={formatCurrency(stats.totalBudget)}
+          color="var(--primary)"
+          icon={IconBuildingBank}
+        />
 
-        {/* Amount Spent */}
-        <div className="bg-sidebar border rounded-lg p-4 flex items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-            <IconTrendingDown className="text-destructive" strokeWidth={1.5} size={20} />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Amount Spent</p>
-            <p className="text-lg font-semibold">{formatCurrency(stats.amountSpent)}</p>
-          </div>
-        </div>
-
-        {/* Remaining Balance with ring */}
-        <div className="bg-sidebar border rounded-lg p-4 flex items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success/10">
-            <IconPigMoney className="text-success" strokeWidth={1.5} size={20} />
-          </div>
-          <div className="flex-1">
-            <p className="text-xs text-muted-foreground">Remaining Balance</p>
-            <p className="text-lg font-semibold">{formatCurrency(stats.remaining)}</p>
-          </div>
-          {/* Circular progress ring */}
+        <StatCard
+          title="Amount Spent"
+          value={formatCurrency(stats.amountSpent)}
+          color="var(--destructive)"
+          icon={IconTrendingDown}
+        />
+        <StatCard
+          title="Remaining Balance"
+          value={formatCurrency(stats.remaining)}
+          color="var(--success)"
+          icon={IconPigMoney}>
           <div className="relative flex items-center justify-center shrink-0">
             <svg width={72} height={72} viewBox="0 0 72 72">
-              <circle
-                cx={36}
-                cy={36}
-                r={r}
-                fill="none"
-                stroke="var(--muted)"
-                strokeWidth={8}
-              />
+              <circle cx={36} cy={36} r={r} fill="none" stroke="var(--muted)" strokeWidth={8} />
               <circle
                 cx={36}
                 cy={36}
@@ -95,11 +75,9 @@ export function BudgetTab() {
                 transform="rotate(-90 36 36)"
               />
             </svg>
-            <span className="absolute text-xs font-semibold text-success">
-              {stats.remainingPct}%
-            </span>
+            <span className="absolute text-xs font-semibold text-success">{stats.remainingPct}%</span>
           </div>
-        </div>
+        </StatCard>
       </div>
 
       {/* Cost Breakdown */}
@@ -110,16 +88,13 @@ export function BudgetTab() {
           return (
             <div key={item.label} className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">{item.label}</span>
+                <span className="text-muted-foreground">{item.label}</span>
                 <span className="text-muted-foreground">
                   {formatCurrency(item.spent)} / {formatCurrency(item.total)}
                 </span>
               </div>
               <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${item.colorClass}`}
-                  style={{ width: `${pct}%` }}
-                />
+                <div className={`h-full rounded-full ${item.colorClass}`} style={{ width: `${pct}%` }} />
               </div>
             </div>
           );
@@ -128,7 +103,14 @@ export function BudgetTab() {
 
       {/* Recent Transactions */}
       <div>
-        <h3 className="text-sm font-semibold mb-3">Recent Transactions</h3>
+        <div className="flex gap-2 mb-3 items-center justify-between">
+          <h3 className="text-sm font-semibold ">Recent Transactions</h3>
+          <Button variant={"outline"}>
+            <IconDownload />
+            Export
+          </Button>
+        </div>
+
         <DataTable
           table={table}
           columns={budgetTransactionColumns}
@@ -144,6 +126,6 @@ export function BudgetTab() {
           }
         />
       </div>
-    </div>
+    </section>
   );
 }

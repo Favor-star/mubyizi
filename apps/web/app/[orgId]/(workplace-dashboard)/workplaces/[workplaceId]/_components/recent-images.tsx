@@ -1,6 +1,7 @@
 import { IconArrowRight } from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 export const RecentImages = () => {
@@ -9,9 +10,11 @@ export const RecentImages = () => {
       <header className="flex justify-between items-center">
         <h1 className="font-bold text-lg">Recent Images</h1>
 
-        <Button variant={"link"}>
-          View all
-          <IconArrowRight />
+        <Button variant={"link"} asChild>
+          <Link href={"gallery"}>
+            View all
+            <IconArrowRight />
+          </Link>
         </Button>
       </header>
       <div className=" flex  gap-2">
@@ -28,9 +31,11 @@ export const RecentImages = () => {
             />
           </div>
         ))}
-        <button className="aspect-square w-full  border border-muted hover:border-border rounded-md overflow-hidden group flex justify-center items-center  p-2">
+        <Link
+          href={"gallery"}
+          className="aspect-square w-full  border border-muted hover:border-border rounded-md overflow-hidden group flex justify-center items-center  p-2">
           <span className="text-primary">+12 more</span>
-        </button>
+        </Link>
       </div>
     </section>
   );

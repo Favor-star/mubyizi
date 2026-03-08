@@ -1,7 +1,16 @@
 import React from "react";
-import { IconChartPie, IconDots, IconHammer, IconPackage, IconUsers } from "@tabler/icons-react";
+import {
+  IconArrowRight,
+  IconChartPie,
+  IconDots,
+  IconDownload,
+  IconHammer,
+  IconPackage,
+  IconUsers
+} from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
 import { Progress } from "@workspace/ui/components/progress";
+import Link from "next/link";
 
 const categories = [
   {
@@ -82,10 +91,9 @@ export const CostTracking = () => {
                       cat.varianceType === "over"
                         ? "text-destructive"
                         : cat.varianceType === "under"
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-muted-foreground"
-                    }`}
-                  >
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-muted-foreground"
+                    }`}>
                     {cat.variance}
                   </p>
                 </div>
@@ -100,9 +108,11 @@ export const CostTracking = () => {
           );
         })}
       </div>
-
-      <Button variant="outline" className="w-full" size="sm">
-        Download Cost Report
+      <Button variant="outline" className="flex-1" size="sm" asChild>
+        <Link href={"budget"}>
+          View All
+          <IconArrowRight />
+        </Link>
       </Button>
     </section>
   );

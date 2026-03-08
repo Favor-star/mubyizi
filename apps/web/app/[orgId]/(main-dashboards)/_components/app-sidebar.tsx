@@ -65,12 +65,13 @@ export function AppSidebar() {
         <NavSecondary items={NAV_SECONDARY_ITEMS} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <div className="border-t border-sidebar-border p-3">
+        <SidebarSeparator className="w-full" />
+        {/* <div className="border-t border-sidebar-border p-3">
           <Button variant="default" className="w-full">
             <IconPlus />
-            New Site
+            New organization
           </Button>
-        </div>
+        </div> */}
         <NavUser
           user={{
             name: "Charlie Nguyen",

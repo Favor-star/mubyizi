@@ -85,7 +85,7 @@ export default function WorkforcePage() {
 
   return (
     <section className="space-y-3 w-full">
-      <hgroup className="flex items-center justify-between">
+      <hgroup className="flex items-center justify-between bg-sidebar p-4">
         <header>
           <h1 className="text-xl font-semibold tracking-tight">Workforce management</h1>
           <p className="text-sm text-muted-foreground">Manage profiles, assignments, and check real-time statuses</p>
@@ -102,7 +102,7 @@ export default function WorkforcePage() {
           </ButtonGroup>
         </div>
       </hgroup>
-      <section className="pt-3">
+      <section className="pt-3 px-4">
         <SearchHeader
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -114,7 +114,7 @@ export default function WorkforcePage() {
           actions={actionsNode}
         />
       </section>
-      <section>
+      <section className="px-4">
         <DataTable
           columns={workersColumns}
           table={table}

@@ -11,8 +11,8 @@ export default function WorkplacesPage() {
   const orgId = params.orgId as string;
 
   return (
-    <section className="space-y-3 w-full">
-      <hgroup className="flex items-center justify-between">
+    <section className="space-y-3 w-full ">
+      <hgroup className="flex items-center justify-between bg-sidebar pt-4 p-4">
         <header>
           <h1 className="text-xl font-semibold tracking-tight">Workforce management</h1>
           <p className="text-sm text-muted-foreground">Manage profiles, assignments, and check real-time statuses</p>
@@ -21,7 +21,7 @@ export default function WorkplacesPage() {
           <ButtonGroup>
             <Button size={"lg"}>
               <IconPlus />
-              Add worker
+              Create workplace
             </Button>
             <Button size={"icon-lg"}>
               <IconChevronDown />
@@ -29,6 +29,7 @@ export default function WorkplacesPage() {
           </ButtonGroup>
         </div>
       </hgroup>
+
       {/* <section className="pt-3">
         <SearchHeader
           searchQuery=""
@@ -40,7 +41,7 @@ export default function WorkplacesPage() {
           actions={null}
         />
       </section> */}
-      <section className="w-full grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4">
+      <section className="w-full grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 px-4">
         {MOCK_WORKPLACES[orgId]?.map((workplace, i) => (
           <WorkplaceCard key={workplace.id} workplace={workplace} orgId={orgId} />
         ))}

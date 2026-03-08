@@ -5,59 +5,52 @@ import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { Label } from "@workspace/ui/components/label";
 import { Input } from "@workspace/ui/components/input";
-import {
-  IconMessage,
-  IconPlayerPlay,
-  IconUser,
-} from "@tabler/icons-react";
+import { IconMessage, IconPlayerPlay, IconUser } from "@tabler/icons-react";
 import { GalleryMedia, GalleryPhaseGroup, MediaType, TradeCategory } from "./types";
 import { mockGalleryGroups } from "./_mock/gallery";
 
 const tradeBg: Record<TradeCategory, string> = {
-  framing: "from-amber-700 to-amber-500",
+  framing: "from-amber-700 to-yellow-500",
   concrete: "from-stone-600 to-stone-400",
   electrical: "from-yellow-700 to-yellow-500",
-  plumbing: "from-blue-700 to-blue-500",
+  plumbing: "from-blue-700 to-blue-500"
 };
 
 const tradeCategoryLabels: { value: TradeCategory; label: string }[] = [
   { value: "concrete", label: "Concrete & Foundation" },
   { value: "framing", label: "Framing" },
   { value: "electrical", label: "Electrical" },
-  { value: "plumbing", label: "Plumbing" },
+  { value: "plumbing", label: "Plumbing" }
 ];
 
 const mediaTypeLabels: { value: MediaType; label: string }[] = [
   { value: "photo", label: "Photos" },
   { value: "video", label: "Videos" },
-  { value: "360", label: "360° Captures" },
+  { value: "360", label: "360° Captures" }
 ];
 
 function MediaCard({ item }: { item: GalleryMedia }) {
   return (
     <div
-      className={`relative rounded-lg overflow-hidden aspect-[3/3] bg-gradient-to-br ${tradeBg[item.tradeCategory]} cursor-pointer`}
-    >
+      className={`relative rounded-lg overflow-hidden aspect-square bg-linear-to-br ${tradeBg[item.tradeCategory]} cursor-pointer`}>
       {/* Top-left badges */}
       <div className="absolute top-2 left-2 flex gap-1">
         <span className="bg-black/50 text-white text-xs font-semibold px-2 py-0.5 rounded capitalize">
           {item.tradeCategory}
         </span>
         {item.mediaType === "video" && (
-          <span className="bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded flex items-center gap-1">
+          <span className="bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded flex items-center gap-1">
             <IconPlayerPlay size={10} strokeWidth={1.5} />
             VIDEO
           </span>
         )}
         {item.mediaType === "360" && (
-          <span className="bg-purple-600 text-white text-xs font-semibold px-2 py-0.5 rounded">
-            360°
-          </span>
+          <span className="bg-purple-500 text-white text-xs font-semibold px-2 py-0.5 rounded">360°</span>
         )}
       </div>
 
       {/* Bottom overlay */}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2.5">
+      <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 to-transparent p-2.5">
         <div className="flex items-center gap-1 mb-1">
           <span className="text-white text-sm font-semibold flex-1 truncate">{item.title}</span>
           <span className="text-white text-xs shrink-0">{item.uploadTime}</span>
@@ -97,15 +90,11 @@ export function GalleryTab() {
   const [dateTo, setDateTo] = useState("");
 
   function toggleTrade(value: TradeCategory) {
-    setTradeFilters((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-    );
+    setTradeFilters((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
   }
 
   function toggleMediaType(value: MediaType) {
-    setMediaTypes((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-    );
+    setMediaTypes((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
   }
 
   function clearAll() {
@@ -122,7 +111,7 @@ export function GalleryTab() {
         const tradeOk = tradeFilters.length === 0 || tradeFilters.includes(item.tradeCategory);
         const mediaOk = mediaTypes.length === 0 || mediaTypes.includes(item.mediaType);
         return tradeOk && mediaOk;
-      }),
+      })
     }))
     .filter((group) => group.media.length > 0);
 
@@ -132,19 +121,14 @@ export function GalleryTab() {
       <aside className="w-[260px] shrink-0 bg-sidebar border rounded-lg p-4 space-y-5">
         <div className="flex items-center justify-between">
           <span className="font-bold text-sm">Filters</span>
-          <button
-            onClick={clearAll}
-            className="text-primary text-sm cursor-pointer hover:underline"
-          >
+          <Button onClick={clearAll} variant="link">
             Clear all
-          </button>
+          </Button>
         </div>
 
         {/* Trade Category */}
         <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-            Trade Category
-          </p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Trade Category</p>
           <div className="space-y-2">
             {tradeCategoryLabels.map(({ value, label }) => (
               <div key={value} className="flex items-center gap-2">
@@ -163,9 +147,7 @@ export function GalleryTab() {
 
         {/* Date Range */}
         <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-            Date Range
-          </p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Date Range</p>
           <div className="space-y-2">
             <div>
               <Label htmlFor="date-from" className="text-xs text-muted-foreground mb-1 block">
@@ -196,9 +178,7 @@ export function GalleryTab() {
 
         {/* Media Type */}
         <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-            Media Type
-          </p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Media Type</p>
           <div className="space-y-2">
             {mediaTypeLabels.map(({ value, label }) => (
               <div key={value} className="flex items-center gap-2">
@@ -219,13 +199,9 @@ export function GalleryTab() {
       {/* Content Area */}
       <div className="flex-1 min-w-0">
         {filteredGroups.length === 0 ? (
-          <p className="text-muted-foreground text-sm py-8 text-center">
-            No media matches the current filters.
-          </p>
+          <p className="text-muted-foreground text-sm py-8 text-center">No media matches the current filters.</p>
         ) : (
-          filteredGroups.map((group) => (
-            <PhaseGroup key={group.phase} group={group} />
-          ))
+          filteredGroups.map((group) => <PhaseGroup key={group.phase} group={group} />)
         )}
 
         <div className="flex justify-center mt-2">

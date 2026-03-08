@@ -1,4 +1,4 @@
-import { WorkplacePageHeader } from "../_components/page-header";
+import { WorkplacePageHeader } from "../_components/workplace-page-header";
 
 const SettingsPage = () => {
   return (

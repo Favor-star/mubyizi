@@ -2,6 +2,7 @@
 import {
   IconArrowLeft,
   IconCalendar,
+  IconClockCheck,
   IconLayoutDashboard,
   IconMoneybag,
   IconPhoto,
@@ -20,12 +21,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
   useSidebar
 } from "@workspace/ui/components/sidebar";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React from "react";
 import { NavMain } from "../../_components/nav-main";
+import { NavUser } from "../../_components/nav-user";
 
 export const WorkplaceSidebar = () => {
   const { isMobile } = useSidebar();
@@ -44,10 +47,11 @@ export const WorkplaceSidebar = () => {
       icon: IconUsers
     },
     {
-      label: "Settings",
-      path: `/workplaces/${workplaceId}/settings`,
-      icon: IconSettings
+      label: "Attendance",
+      path: `/workplaces/${workplaceId}/attendance`,
+      icon: IconClockCheck
     },
+
     {
       label: "Budget",
       path: `/workplaces/${workplaceId}/budget`,
@@ -62,6 +66,11 @@ export const WorkplaceSidebar = () => {
       label: "Timeline",
       path: `/workplaces/${workplaceId}/timeline`,
       icon: IconCalendar
+    },
+    {
+      label: "Settings",
+      path: `/workplaces/${workplaceId}/settings`,
+      icon: IconSettings
     }
   ];
 
@@ -92,12 +101,21 @@ export const WorkplaceSidebar = () => {
         <NavMain items={sidebarItems} />
       </SidebarContent>
       <SidebarFooter>
-        <Button asChild>
+        <SidebarMenuButton asChild tooltip={"Go back to organization dashboard"} className="w-fit">
           <Link href={".."}>
             <IconArrowLeft></IconArrowLeft>
-            Go back to dashboard
+            Go back
           </Link>
-        </Button>
+        </SidebarMenuButton>
+
+        <SidebarSeparator />
+        <NavUser
+          user={{
+            name: "Eliab Favor",
+            email: "eliab@favor.gmail.com",
+            avatar: "https://avatars.githubusercontent.com/u/260647568?v=4&size=64"
+          }}
+        />
       </SidebarFooter>
     </Sidebar>
   );

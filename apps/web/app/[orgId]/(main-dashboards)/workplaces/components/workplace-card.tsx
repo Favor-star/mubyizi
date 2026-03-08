@@ -1,4 +1,4 @@
-import { IconChecks, IconExternalLink, IconMapPin, IconUsers } from "@tabler/icons-react";
+import { IconChecks, IconExternalLink, IconMapPin, IconPointFilled, IconUsers } from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
 import { Progress } from "@workspace/ui/components/progress";
 import Image from "next/image";
@@ -27,8 +27,8 @@ export const WorkplaceCard = ({ workplace, orgId }: { workplace: Workplace; orgI
         alt="Event cover"
         className="relative z-20 aspect-video w-full object-cover brightness-60 grayscale dark:brightness-40"
       />
-      <Badge variant="default" className="absolute z-30 top-2 right-2 ">
-        <IconChecks data-icon="inline-start" />
+      <Badge variant="outline" className="absolute z-30 top-2 right-2 text-success border-success">
+        <IconPointFilled data-icon="inline-start" />
         Active
       </Badge>
       <CardHeader>
@@ -49,7 +49,7 @@ export const WorkplaceCard = ({ workplace, orgId }: { workplace: Workplace; orgI
           <IconUsers data-icon="inline-start" />
           12 workers
         </Badge>
-        <Button className="ml-auto" variant={"default"} asChild>
+        <Button className="ml-auto" variant={"outline"} asChild>
           <Link href={`/${orgId}/workplaces/${workplace.id}`}>
             View Site <IconExternalLink />
           </Link>

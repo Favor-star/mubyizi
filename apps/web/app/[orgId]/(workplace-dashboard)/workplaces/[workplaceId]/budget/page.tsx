@@ -1,10 +1,37 @@
+import { Button } from "@workspace/ui/components/button";
 import { BudgetTab } from "../_components/budget-tab";
-import { WorkplacePageHeader } from "../_components/page-header";
+import { WorkplacePageHeader } from "../_components/workplace-page-header";
+import { IconDownload, IconEdit, IconPlus } from "@tabler/icons-react";
+import { Separator } from "@workspace/ui/components/separator";
 
 const BudgetPage = () => {
   return (
     <section className="h-full">
-      <WorkplacePageHeader title="Budget" />
+      <WorkplacePageHeader title="Budget">
+        <section className="mt-8 mb-3 flex justify-between items-center ">
+          <hgroup>
+            <h1 className="text-2xl font-bold mt-2">Site name - Budget</h1>
+            <p className="text-muted-foreground text-sm">
+              Check the budget status, track expenses, and manage financial resources for your project.
+            </p>
+          </hgroup>
+          <div className="flex gap-2">
+            <Button size={"lg"} variant={"outline"}>
+              <IconEdit strokeWidth={1.5} />
+              Edit details
+            </Button>
+            <Button size={"lg"} variant={"outline"}>
+              <IconPlus strokeWidth={1.5} />
+              New Expense
+            </Button>
+            <Separator orientation="vertical" />
+            <Button size={"lg"}>
+              <IconDownload strokeWidth={1.5} />
+              Export
+            </Button>
+          </div>
+        </section>
+      </WorkplacePageHeader>
       <BudgetTab />
     </section>
   );

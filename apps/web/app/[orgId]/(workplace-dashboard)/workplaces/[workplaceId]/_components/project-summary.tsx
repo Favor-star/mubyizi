@@ -4,7 +4,7 @@ export const ProjectSummary = () => {
   return (
     <section className="p-3 bg-sidebar border">
       <h1 className="font-bold ">Project Summary</h1>
-      <p className="line-clamp-3">
+      <p className="line-clamp-3 text-sm font-light">
         Lorem ipsum dolor sit, amet consectetur adipisicing elit. Molestiae tempora mollitia minus saepe dolores iste
         nemo officiis consequatur animi placeat! A at assumenda accusamus delectus ratione nulla sint similique nemo
         magni! Culpa impedit quas iure, voluptates libero error harum, minima id dolorem deserunt eius laboriosam illum
@@ -26,9 +26,9 @@ export const ProjectSummary = () => {
 
 const SubCard = ({ title, description }: { title: string; description: string }) => {
   return (
-    <section className="p-3 bg-background space-y-1 ">
-      <h2 className="uppercase font-medium text-muted-foreground">{title}</h2>
-      <p className=" font-bold">{description}</p>
+    <section className="p-3 bg-background space-y-1 border border-muted ">
+      <h2 className="uppercase font-medium text-muted-foreground  text-sm">{title}</h2>
+      <p className=" font-bold ">{description}</p>
     </section>
   );
 };

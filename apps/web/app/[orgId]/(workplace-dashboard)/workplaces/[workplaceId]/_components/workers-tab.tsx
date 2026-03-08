@@ -11,6 +11,7 @@ import { useGeneralTable } from "@/hooks/use-general-table";
 import { mockPaginatedWorkers, mockWorkerStats } from "./_mock/workers";
 import { workplaceWorkersColumns } from "./workers-columns";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@workspace/ui/components/input-group";
+import { StatCard } from "./stat-card";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -52,39 +53,23 @@ export function WorkersTab() {
   };
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-4 space-y-4">
       {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-sidebar border rounded-lg p-4 flex items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-            <IconUsers className="text-primary" strokeWidth={1.5} size={20} />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Total Assigned</p>
-            <p className="text-lg font-semibold">{stats.totalAssigned} Workers</p>
-          </div>
-        </div>
-
-        <div className="bg-sidebar border rounded-lg p-4 flex items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success/10 ">
-            <IconUserCheck className="text-success " strokeWidth={1.5} size={20} />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Active Now</p>
-            <p className="text-lg font-semibold">{stats.activeNow} On Site</p>
-          </div>
-        </div>
-
-        <div className="bg-sidebar border rounded-lg p-4 flex items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning/30 dark:bg-warning/20">
-            <IconCash className="text-warning dark:text-warning" strokeWidth={1.5} size={20} />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Labor Cost Today</p>
-            <p className="text-lg font-semibold">{formatCurrency(stats.laborCostToday)}</p>
-          </div>
-        </div>
-      </div>
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard
+          title="Total Assigned"
+          value={`${stats.totalAssigned} Workers`}
+          color="var(--primary)"
+          icon={IconUsers}
+        />
+        <StatCard title="Active Now" value={`${stats.activeNow} On Site`} color="var(--success)" icon={IconUserCheck} />
+        <StatCard
+          title="Labor Cost Today"
+          value={formatCurrency(stats.laborCostToday)}
+          color="var(--warning)"
+          icon={IconCash}
+        />
+      </section>
 
       {/* Search + filter bar */}
       <div className="bg-sidebar border  p-3 flex flex-wrap items-center gap-2">

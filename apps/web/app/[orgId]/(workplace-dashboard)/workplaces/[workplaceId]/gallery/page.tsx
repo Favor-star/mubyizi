@@ -1,5 +1,5 @@
 import { GalleryTab } from "../_components/gallery-tab";
-import { WorkplacePageHeader } from "../_components/page-header";
+import { WorkplacePageHeader } from "../_components/workplace-page-header";
 
 const GalleryPage = () => {
   return (
