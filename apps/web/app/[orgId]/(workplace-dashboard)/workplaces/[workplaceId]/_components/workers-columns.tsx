@@ -6,6 +6,7 @@ import { Button } from "@workspace/ui/components/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 import type { WorkplaceWorker } from "./types";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/ui/components/tooltip";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -21,12 +22,6 @@ function formatCheckIn(iso?: string): string {
     minute: "2-digit"
   });
 }
-
-const tradeLevelVariants: Record<WorkplaceWorker["tradeLevel"], string> = {
-  Master: "border-violet-500 text-violet-600 dark:text-violet-400",
-  Journeyman: "border-blue-500 text-blue-600 dark:text-blue-400",
-  Apprentice: "border-border text-muted-foreground"
-};
 
 const statusColors: Record<WorkplaceWorker["todayStatus"], string> = {
   on_site: "bg-primary",
@@ -61,11 +56,7 @@ export const workplaceWorkersColumns: ColumnDef<WorkplaceWorker>[] = [
   {
     accessorKey: "tradeLevel",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Trade Level" />,
-    cell: ({ row }) => (
-      <Badge variant="outline" className={tradeLevelVariants[row.original.tradeLevel]}>
-        {row.original.tradeLevel}
-      </Badge>
-    )
+    cell: ({ row }) => <span className="text-sm">{row.original.tradeLevel}</span>
   },
   {
     accessorKey: "todayStatus",
@@ -94,15 +85,27 @@ export const workplaceWorkersColumns: ColumnDef<WorkplaceWorker>[] = [
     enableSorting: false,
     cell: () => (
       <div className="flex items-center gap-1 whitespace-nowrap">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" size="icon">
+              <IconEye strokeWidth={1.5} size={15} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>View worker details</p>
+          </TooltipContent>
+        </Tooltip>
         <Button variant="outline" size="icon">
-          <IconEye strokeWidth={1.5} size={15} />
-        </Button>
-        <Button variant="ghost" size="icon">
           <IconCheckbox strokeWidth={1.5} size={15} />
         </Button>
-        <Button variant="ghost" size="icon">
-          <IconCalendar strokeWidth={1.5} size={15} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" size="icon">
+              <IconCalendar strokeWidth={1.5} size={15} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Attendance data</TooltipContent>
+        </Tooltip>
       </div>
     )
   }

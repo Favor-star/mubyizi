@@ -48,7 +48,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4">
       {/* Overview header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold tracking-tight">Overview</h1>
@@ -67,7 +67,12 @@ export default function DashboardPage() {
         {/* Left: charts */}
         <div className="space-y-4">
           <SpendingChart stats={stats} />
-          <WorkplaceStatusChart stats={stats} />
+          <div className="flex gap-4">
+            <WorkplaceStatusChart stats={stats} />
+            <section className="flex-1 bg-card rounded-lg p-4 border border-border">
+              
+            </section>
+          </div>
         </div>
 
         {/* Right: approvals + activity */}
