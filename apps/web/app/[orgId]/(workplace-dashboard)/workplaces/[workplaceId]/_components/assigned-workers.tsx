@@ -108,7 +108,7 @@ const columns: ColumnDef<AssignedWorker>[] = [
 ];
 
 export const AssignedWorkers = () => {
-  const table = useGeneralTable(workers, columns);
+  const { table } = useGeneralTable(workers, columns);
 
   return (
     <section className="mt-4 bg-sidebar border p-3">

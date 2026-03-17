@@ -15,21 +15,21 @@ import {
   IconWallet,
   IconChartBar,
   IconSettings,
-  IconPlus,
   IconBriefcase2,
   IconHelp,
-  IconClockCheck
+  IconClockCheck,
+  IconFileText
 } from "@tabler/icons-react";
 import { NavMain } from "../../_components/nav-main";
 import { NavSecondary } from "../../_components/nav-secondary";
 import { NavUser } from "../../_components/nav-user";
-import { Button } from "@workspace/ui/components/button";
 import { OrgSwitcher } from "./org-switcher";
 import { MOCK_ORGS } from "@/data/mock";
 
 const NAV_ITEMS = [
   { path: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
   { path: "/attendance", label: "Attendance", icon: IconClockCheck },
+  { path: "/documents", label: "Documents", icon: IconFileText },
   { path: "/workplaces", label: "Workplaces", icon: IconBuildingCommunity },
   { path: "/workforce", label: "Workforce", icon: IconUsers },
   { path: "/financials", label: "Financials", icon: IconWallet },

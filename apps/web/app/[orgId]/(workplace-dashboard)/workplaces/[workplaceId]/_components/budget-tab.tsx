@@ -7,7 +7,7 @@ import { DataTablePagination } from "@/shared/components/data-table-pagination";
 import { useGeneralTable } from "@/hooks/use-general-table";
 import { mockBudgetStats, mockCostBreakdown, mockPaginatedTransactions } from "./_mock/budget";
 import { budgetTransactionColumns } from "./budget-columns";
-import { StatCard } from "./stat-card";
+import { StatCard } from "@/shared/components/stat-card";
 import { Button } from "@workspace/ui/components/button";
 
 function formatCurrency(cents: number): string {
@@ -22,7 +22,7 @@ export function BudgetTab() {
   const stats = mockBudgetStats;
   const { data: transactions, total, page, pageSize } = mockPaginatedTransactions;
 
-  const table = useGeneralTable(transactions, budgetTransactionColumns);
+  const { table } = useGeneralTable(transactions, budgetTransactionColumns);
 
   const totalPages = Math.ceil(total / pageSize);
   const paginationMeta = {

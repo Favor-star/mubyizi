@@ -65,7 +65,7 @@ export default function WorkforcePage() {
     });
   }, [searchQuery, filterValues]);
 
-  const table = useGeneralTable(filteredItems, workersColumns);
+  const { table } = useGeneralTable(filteredItems, workersColumns);
 
   const actionsNode = (
     <>

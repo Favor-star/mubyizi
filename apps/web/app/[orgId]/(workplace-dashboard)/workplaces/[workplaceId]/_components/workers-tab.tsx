@@ -11,7 +11,7 @@ import { useGeneralTable } from "@/hooks/use-general-table";
 import { mockPaginatedWorkers, mockWorkerStats } from "./_mock/workers";
 import { workplaceWorkersColumns } from "./workers-columns";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@workspace/ui/components/input-group";
-import { StatCard } from "./stat-card";
+import { StatCard } from "@/shared/components/stat-card";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -40,7 +40,7 @@ export function WorkersTab() {
     });
   }, [workers, searchQuery, roleFilter, statusFilter]);
 
-  const table = useGeneralTable(filteredWorkers, workplaceWorkersColumns);
+  const { table } = useGeneralTable(filteredWorkers, workplaceWorkersColumns);
 
   const totalPages = Math.ceil(total / pageSize);
   const paginationMeta = {

@@ -17,7 +17,7 @@ import {
 } from "@tabler/icons-react";
 import { DataTable } from "@/shared/components/data-table";
 import { DataTablePagination } from "@/shared/components/data-table-pagination";
-import { StatCard } from "./stat-card";
+import { StatCard } from "@/shared/components/stat-card";
 import { attendanceColumns, type AttendanceTableMeta } from "./attendance-columns";
 import { AttendancePanel } from "./attendance-panel";
 import { mockAttendanceRows, computeAttendanceSummary } from "./_mock/attendance";
