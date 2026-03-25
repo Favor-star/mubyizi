@@ -68,6 +68,11 @@ export const WorkplaceSidebar = () => {
       icon: IconCalendar
     },
     {
+      label: "Reports",
+      path: `/workplaces/${workplaceId}/reports`,
+      icon: IconTools
+    },
+    {
       label: "Settings",
       path: `/workplaces/${workplaceId}/settings`,
       icon: IconSettings

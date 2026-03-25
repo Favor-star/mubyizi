@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@workspace/ui/components/input-group";
 import { IconChevronDown, IconFilter2, IconSearch } from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
@@ -42,7 +42,7 @@ export const SearchHeader = ({
   actions
 }: SearchHeaderProps) => {
   return (
-    <section className="flex gap-4 p-3 bg-sidebar border justify-between">
+    <section className="flex gap-4 py-3 justify-between">
       <article aria-label="Search and filters" className="flex gap-6">
         <InputGroup className="max-w-sm bg-background">
           <InputGroupInput
@@ -53,9 +53,7 @@ export const SearchHeader = ({
           <InputGroupAddon>
             <IconSearch />
           </InputGroupAddon>
-          {resultCount !== undefined && (
-            <InputGroupAddon align="inline-end">{resultCount} results</InputGroupAddon>
-          )}
+          {resultCount !== undefined && <InputGroupAddon align="inline-end">{resultCount} results</InputGroupAddon>}
         </InputGroup>
         <div aria-label="Filters" className="flex items-center gap-2">
           {filters?.map((config) => {
@@ -70,8 +68,7 @@ export const SearchHeader = ({
                 onValueChange={(next) => onFilterChange?.(config.key, next)}
                 trigger={
                   <Button variant="outline">
-                    <span className="text-muted-foreground">{config.label}:</span> {label}{" "}
-                    <IconChevronDown />
+                    <span className="text-muted-foreground">{config.label}:</span> {label} <IconChevronDown />
                   </Button>
                 }
               />

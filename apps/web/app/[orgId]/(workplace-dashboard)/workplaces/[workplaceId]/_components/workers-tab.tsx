@@ -1,6 +1,6 @@
 "use client";
 
-import { IconAdjustments, IconCash, IconSearch, IconUserCheck, IconUsers } from "@tabler/icons-react";
+import { IconAdjustments, IconCash, IconFilter, IconLayoutGrid, IconList, IconSearch, IconUserCheck, IconUsers } from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select";
@@ -12,6 +12,7 @@ import { mockPaginatedWorkers, mockWorkerStats } from "./_mock/workers";
 import { workplaceWorkersColumns } from "./workers-columns";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@workspace/ui/components/input-group";
 import { StatCard } from "@/shared/components/stat-card";
+import { ButtonGroup } from "@workspace/ui/components/button-group";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -53,7 +54,7 @@ export function WorkersTab() {
   };
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-4 ">
       {/* Stat cards */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
@@ -72,46 +73,39 @@ export function WorkersTab() {
       </section>
 
       {/* Search + filter bar */}
-      <div className="bg-sidebar border  p-3 flex flex-wrap items-center gap-2">
-        <InputGroup className="flex-1 min-w-48  gap-2 ">
-          <InputGroupAddon>
-            <IconSearch strokeWidth={1.5} size={16} />
-          </InputGroupAddon>
-          <InputGroupInput
-            placeholder="Search by name or worker ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </InputGroup>
-
-        <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-36 bg-background">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all-roles">All Roles</SelectItem>
-            <SelectItem value="site-foreman">Site Foreman</SelectItem>
-            <SelectItem value="electrician">Electrician</SelectItem>
-            <SelectItem value="laborer">Laborer</SelectItem>
-            <SelectItem value="plumber">Plumber</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-36 bg-background">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all-statuses">All Statuses</SelectItem>
-            <SelectItem value="on-site">On Site</SelectItem>
-            <SelectItem value="on-break">On Break</SelectItem>
-            <SelectItem value="not-started">Not Started</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Button variant="ghost" size="icon" className="shrink-0">
-          <IconAdjustments strokeWidth={1.5} size={18} />
-        </Button>
+      <div className="flex justify-between pt-4 pb-2">
+        <div className="flex gap-2">
+          <ButtonGroup>
+            <ButtonGroup>
+              <InputGroup>
+                <InputGroupAddon align={"inline-start"}>
+                  <IconSearch />
+                </InputGroupAddon>
+                <InputGroupInput />
+                <InputGroupAddon align={"inline-end"}>7 results</InputGroupAddon>
+              </InputGroup>
+            </ButtonGroup>
+            <ButtonGroup>
+              <Button variant={"outline"}>
+                <IconFilter />
+                Filters
+              </Button>
+            </ButtonGroup>
+          </ButtonGroup>
+        </div>
+        <div className="flex gap-2">
+          <ButtonGroup>
+            <Button variant="default" size="sm">
+              <IconList /> List
+            </Button>
+            <Button variant="outline" size="sm">
+              <IconLayoutGrid /> Grid
+            </Button>
+          </ButtonGroup>{" "}
+          <Button variant="outline" size="icon-sm">
+            <IconAdjustments strokeWidth={1.2} />
+          </Button>
+        </div>
       </div>
 
       {/* Workers table */}

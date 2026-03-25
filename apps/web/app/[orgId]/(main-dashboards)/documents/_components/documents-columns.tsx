@@ -65,10 +65,12 @@ export const documentColumns: ColumnDef<DocumentRow>[] = [
     enableSorting: false,
     cell: ({ row }) =>
       row.original.expiryStatus === "expired" ? (
-        <Button size="sm" variant="link">
-          <IconSwitch3 />
-          Renew
-        </Button>
+        <div className="text-end">
+          <Button size="sm" variant="link">
+            <IconSwitch3 />
+            Renew
+          </Button>
+        </div>
       ) : (
         <div className="flex items-center justify-end gap-1">
           <Button size="sm" variant="link">

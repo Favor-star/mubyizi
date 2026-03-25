@@ -13,29 +13,24 @@ import { ButtonGroup } from "@workspace/ui/components/button-group";
 import { StatCard } from "@/shared/components/stat-card";
 import { FoldersPanel } from "./_components/folders-panel";
 import { DocumentsTable } from "./_components/documents-table";
+import { PageHeader } from "../_components/page-header";
 
 export default function DocumentsPage() {
   return (
     <section className="space-y-3 w-full">
-      <hgroup className="flex items-center justify-between bg-sidebar p-4 border-b border-border">
-        <header>
-          <h1 className="text-xl font-semibold tracking-tight">Documents</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage HR documents, contracts and certifications across all sites
-          </p>
-        </header>
-        <div className="flex gap-3">
-          <ButtonGroup>
-            <Button size={"lg"} variant={"default"}>
-              <IconPlus />
-              Upload a document
-            </Button>
-            <Button size={"icon-lg"} variant={"default"}>
-              <IconChevronDown />
-            </Button>
-          </ButtonGroup>
-        </div>
-      </hgroup>
+      <PageHeader
+        title="Documents"
+        description="Manage HR documents, contracts and certifications across all sites">
+        <ButtonGroup>
+          <Button size="lg" variant="default">
+            <IconPlus />
+            Upload a document
+          </Button>
+          <Button size="icon-lg" variant="default">
+            <IconChevronDown />
+          </Button>
+        </ButtonGroup>
+      </PageHeader>
 
       <section className="p-4 space-y-4">
         {/* Stat cards */}
@@ -55,7 +50,7 @@ export default function DocumentsPage() {
                 <p className="text-sm font-medium">Upload Document</p>
                 <p className="text-xs text-muted-foreground">Drag and drop files here, or browse to upload</p>
               </div>
-              <Button size="sm" variant="default" className="mt-1">
+              <Button size="sm" variant="outline" className="mt-1">
                 Browse Files
                 <IconFolderOpen />
               </Button>

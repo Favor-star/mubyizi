@@ -18,7 +18,8 @@ import {
   IconBriefcase2,
   IconHelp,
   IconClockCheck,
-  IconFileText
+  IconFileText,
+  IconReportMoney
 } from "@tabler/icons-react";
 import { NavMain } from "../../_components/nav-main";
 import { NavSecondary } from "../../_components/nav-secondary";
@@ -32,12 +33,12 @@ const NAV_ITEMS = [
   { path: "/documents", label: "Documents", icon: IconFileText },
   { path: "/workplaces", label: "Workplaces", icon: IconBuildingCommunity },
   { path: "/workforce", label: "Workforce", icon: IconUsers },
-  { path: "/financials", label: "Financials", icon: IconWallet },
+  { path: "/payroll", label: "Payroll", icon: IconReportMoney },
   { path: "/reports", label: "Reports", icon: IconChartBar }
 ] as const;
 
 const NAV_SECONDARY_ITEMS = [
-  { title: "Settings", url: "#", icon: IconSettings },
+  { title: "Settings", url: "settings", icon: IconSettings },
   { title: "Support & Community", url: "#", icon: IconUsers },
   { title: "Get help", url: "#", icon: IconHelp }
 ] as const;

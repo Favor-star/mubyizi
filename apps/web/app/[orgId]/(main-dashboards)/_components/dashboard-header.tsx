@@ -17,7 +17,9 @@ const SEGMENT_LABELS: Record<string, string> = {
   workforce: "Workforce",
   financials: "Financials",
   reports: "Reports",
-  settings: "Settings"
+  settings: "Settings",
+  documents: "Documents",
+  payroll: "Payroll"
 };
 
 export function DashboardsHeader() {

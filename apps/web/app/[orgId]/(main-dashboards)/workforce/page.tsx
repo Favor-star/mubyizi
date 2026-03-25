@@ -2,13 +2,27 @@
 import { DataTable } from "@/shared/components/data-table";
 import { DataTablePagination } from "@/shared/components/data-table-pagination";
 import { SearchHeader, FilterConfig } from "@/shared/components/search-header";
-import { IconAdjustmentsAlt, IconChevronDown, IconDownload, IconPlus } from "@tabler/icons-react";
+import { PageHeader } from "../_components/page-header";
+import {
+  IconAdjustments,
+  IconAdjustmentsAlt,
+  IconChevronDown,
+  IconDownload,
+  IconFilter,
+  IconLayoutGrid,
+  IconList,
+  IconPlus,
+  IconSearch,
+  IconUser
+} from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
 import { ButtonGroup } from "@workspace/ui/components/button-group";
 import { workersColumns, WorkerItem } from "./column-def";
 import { useGeneralTable } from "@/hooks/use-general-table";
 import { mockWorkers } from "./data/mock";
 import React from "react";
+import { StatCard } from "@/shared/components/stat-card";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@workspace/ui/components/input-group";
 
 const workerFilters: FilterConfig[] = [
   {
@@ -69,7 +83,7 @@ export default function WorkforcePage() {
 
   const actionsNode = (
     <>
-      <ButtonGroup>
+      {/* <ButtonGroup>
         <Button variant="outline">
           <IconDownload /> Export
         </Button>
@@ -79,31 +93,41 @@ export default function WorkforcePage() {
       </ButtonGroup>
       <Button>
         <IconAdjustmentsAlt /> Hide/show
-      </Button>
+      </Button> */}
     </>
   );
 
   return (
     <section className="space-y-3 w-full">
-      <hgroup className="flex items-center justify-between bg-sidebar p-4">
-        <header>
-          <h1 className="text-xl font-semibold tracking-tight">Workforce management</h1>
-          <p className="text-sm text-muted-foreground">Manage profiles, assignments, and check real-time statuses</p>
-        </header>
-        <div className="flex gap-3">
-          <ButtonGroup>
-            <Button size={"lg"}>
-              <IconPlus />
-              Add worker
-            </Button>
-            <Button size={"icon-lg"}>
-              <IconChevronDown />
-            </Button>
-          </ButtonGroup>
+      <PageHeader
+        title="Workforce management"
+        description="Manage profiles, assignments, and check real-time statuses">
+        <ButtonGroup>
+          <Button variant="outline">
+            <IconDownload /> Export
+          </Button>
+          <Button variant="outline">
+            <IconChevronDown />
+          </Button>
+        </ButtonGroup>
+        <ButtonGroup>
+          <Button size="lg">
+            <IconPlus />
+            Add worker
+          </Button>
+          <Button size="icon-lg">
+            <IconChevronDown />
+          </Button>
+        </ButtonGroup>
+      </PageHeader>
+      <section className="pt-3 px-4 space-y-4">
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          <StatCard icon={IconUser} color="var(--destructive)" title="Total users" value="320" />
+          <StatCard title="Inactive workers" value="48" icon={IconUser} color="var(--success)" />
+          <StatCard title="Pending profiles" value="12" icon={IconUser} color="var(--warning)" />
+          <StatCard title="Today's check-ins" value="128" icon={IconUser} color="var(--primary)" />
         </div>
-      </hgroup>
-      <section className="pt-3 px-4">
-        <SearchHeader
+        {/* <SearchHeader
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           searchPlaceholder="Search by name, trade, phone, email..."
@@ -112,9 +136,43 @@ export default function WorkforcePage() {
           filterValues={filterValues}
           onFilterChange={(key, vals) => setFilterValues((prev) => ({ ...prev, [key]: vals }))}
           actions={actionsNode}
-        />
+        /> */}
       </section>
       <section className="px-4">
+        <div className="flex justify-between pt-3 pb-2">
+          <div className="flex gap-2">
+            <ButtonGroup>
+              <ButtonGroup>
+                <InputGroup>
+                  <InputGroupAddon align={"inline-start"}>
+                    <IconSearch />
+                  </InputGroupAddon>
+                  <InputGroupInput />
+                  <InputGroupAddon align={"inline-end"}>7 results</InputGroupAddon>
+                </InputGroup>
+              </ButtonGroup>
+              <ButtonGroup>
+                <Button variant={"outline"}>
+                  <IconFilter />
+                  Filters
+                </Button>
+              </ButtonGroup>
+            </ButtonGroup>
+          </div>
+          <div className="flex gap-2">
+            <ButtonGroup>
+              <Button variant="default" size="sm">
+                <IconList /> List
+              </Button>
+              <Button variant="outline" size="sm">
+                <IconLayoutGrid /> Grid
+              </Button>
+            </ButtonGroup>{" "}
+            <Button variant="outline" size="icon-sm">
+              <IconAdjustments strokeWidth={1.2} />
+            </Button>
+          </div>
+        </div>
         <DataTable
           columns={workersColumns}
           table={table}
