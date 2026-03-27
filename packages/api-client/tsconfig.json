@@ -3,7 +3,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "module": "es2015",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true
   },
   "include": ["src"]
 }

@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "exports": {
     ".": "./src/main.ts",
-    "./routes/users": "./src/routes/users.route.ts"
+    "./routes/users": "./src/routes/users.route.ts",
+    "./prisma-exports/*": "./src/lib/generated/prisma/*"
   },
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx -r dotenv/config --watch src/main.ts",

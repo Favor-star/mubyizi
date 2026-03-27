@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./fetcher": "./src/fetcher.ts"
+    "./fetcher": "./src/fetcher.ts",
+    "./enums": "./src/enums.ts"
   },
   "dependencies": {
     "hono": "^4.12.0"
