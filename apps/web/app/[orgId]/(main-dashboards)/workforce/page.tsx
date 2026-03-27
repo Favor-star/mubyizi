@@ -6,6 +6,7 @@ import { PageHeader } from "../_components/page-header";
 import {
   IconAdjustments,
   IconAdjustmentsAlt,
+  IconBolt,
   IconChevronDown,
   IconDownload,
   IconFilter,
@@ -13,16 +14,29 @@ import {
   IconList,
   IconPlus,
   IconSearch,
-  IconUser
+  IconTable,
+  IconUpload,
+  IconUser,
+  IconUsers
 } from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
 import { ButtonGroup } from "@workspace/ui/components/button-group";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@workspace/ui/components/dropdown-menu";
 import { workersColumns, WorkerItem } from "./column-def";
 import { useGeneralTable } from "@/hooks/use-general-table";
 import { mockWorkers } from "./data/mock";
 import React from "react";
 import { StatCard } from "@/shared/components/stat-card";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@workspace/ui/components/input-group";
+import Link from "next/link";
+import { useParams, usePathname } from "next/navigation";
 
 const workerFilters: FilterConfig[] = [
   {
@@ -57,6 +71,9 @@ const workerFilters: FilterConfig[] = [
 ];
 
 export default function WorkforcePage() {
+  const params = useParams();
+  const orgId = params.orgId as string;
+  const path = usePathname();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [filterValues, setFilterValues] = React.useState<Record<string, string[]>>({});
 
@@ -106,18 +123,79 @@ export default function WorkforcePage() {
           <Button variant="outline">
             <IconDownload /> Export
           </Button>
-          <Button variant="outline">
-            <IconChevronDown />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <IconChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-48">
+              <DropdownMenuLabel>Export options</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <IconTable />
+                <div>
+                  <p>Export as CSV</p>
+                  <p className="text-xs text-muted-foreground">Download all worker data</p>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <IconDownload />
+                <div>
+                  <p>Export as Excel</p>
+                  <p className="text-xs text-muted-foreground">Formatted spreadsheet</p>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </ButtonGroup>
         <ButtonGroup>
-          <Button size="lg">
-            <IconPlus />
-            Add worker
+          <Button size="lg" asChild>
+            <Link href={`${path}/create`}>
+              <IconPlus />
+              Add worker
+            </Link>
           </Button>
-          <Button size="icon-lg">
-            <IconChevronDown />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon-lg">
+                <IconChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-56">
+              <DropdownMenuLabel>More options</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <IconBolt />
+                <div>
+                  <p>Quick add</p>
+                  <p className="text-xs text-muted-foreground">Just a name — fill details later</p>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <IconTable />
+                <div>
+                  <p>Import from CSV</p>
+                  <p className="text-xs text-muted-foreground">Bulk import multiple workers</p>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <IconUpload />
+                <div>
+                  <p>Bulk provision</p>
+                  <p className="text-xs text-muted-foreground">Create provisional profiles in batch</p>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <IconUsers />
+                <div>
+                  <p>Invite by email</p>
+                  <p className="text-xs text-muted-foreground">Send sign-up invites to workers</p>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </ButtonGroup>
       </PageHeader>
       <section className="pt-3 px-4 space-y-4">
