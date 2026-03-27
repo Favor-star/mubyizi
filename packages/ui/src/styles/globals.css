@@ -162,3 +162,14 @@
 .debug_3 {
   @apply border border-blue-500!;
 }
+.scrollbar_styles {
+  &::-webkit-scrollbar {
+    @apply w-1 h-11;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-muted w-1;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted/80 w-3;
+  }
+}
