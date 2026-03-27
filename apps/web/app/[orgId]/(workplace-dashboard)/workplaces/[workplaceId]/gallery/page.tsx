@@ -1,41 +1,36 @@
-import { ButtonGroup } from "@workspace/ui/components/button-group";
-import { GalleryTab } from "../_components/gallery-tab";
+import { GalleryDocumentsView } from "../_components/gallery-documents-view";
 import { WorkplacePageHeader } from "../_components/workplace-page-header";
+import { ButtonGroup } from "@workspace/ui/components/button-group";
 import { Button } from "@workspace/ui/components/button";
-import { IconCalendar, IconChevronLeft, IconChevronRight, IconDownload, IconPlus } from "@tabler/icons-react";
+import { IconChevronDown, IconPlus, IconUpload } from "@tabler/icons-react";
 
 const GalleryPage = () => {
   return (
     <section className="h-full">
-      <WorkplacePageHeader title="Documents">
-        <section className="mt-8 mb-3 flex justify-between items-center ">
+      <WorkplacePageHeader title="Gallery & Documents">
+        <section className="mt-8 mb-3 flex justify-between items-center">
           <hgroup>
-            <h1 className="text-2xl font-bold mt-2">Site name - Documents</h1>
-            <p className="text-muted-foreground text-sm">
-              Site A — Nairobi CBD | All images that are related to this site.
-            </p>
+            <h1 className="text-2xl font-bold mt-2">Site name — Gallery & Documents</h1>
+            <p className="text-muted-foreground text-sm">Media captures and documents for this workplace.</p>
           </hgroup>
           <div className="flex gap-3 items-center">
             <ButtonGroup>
-              <Button variant="outline" size="icon-lg">
-                <IconChevronLeft />
+              <Button size="lg" variant="default">
+                <IconUpload />
+                Upload document
               </Button>
-              <Button size="lg" variant="outline">
-                <IconCalendar />
-                12 Aug - 12 Sep 2024
-              </Button>
-              <Button variant="outline" size="icon-lg">
-                <IconChevronRight />
+              <Button size="icon-lg" variant="default">
+                <IconChevronDown />
               </Button>
             </ButtonGroup>
-            <Button size="lg" variant="default">
+            <Button size="lg" variant="outline">
               <IconPlus />
-              Add new
+              Add media
             </Button>
           </div>
         </section>
       </WorkplacePageHeader>
-      <GalleryTab />
+      <GalleryDocumentsView />
     </section>
   );
 };

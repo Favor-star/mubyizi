@@ -138,3 +138,18 @@ export type GalleryPhaseGroup = {
   dotColorClass: string;
   media: GalleryMedia[];
 };
+
+// ─── Documents ────────────────────────────────────────────────────────────────
+
+export type WorkplaceDocFormat = "PDF" | "IMG" | "DOC";
+export type WorkplaceDocType = "Contract" | "Certification" | "HR Policy" | "Safety";
+
+export type WorkplaceDocumentRow = {
+  id: string;
+  name: string;
+  format: WorkplaceDocFormat;
+  type: WorkplaceDocType;
+  worker: string;
+  expires: string | null;
+  expiryStatus: "valid" | "warning" | "expired" | "none";
+};

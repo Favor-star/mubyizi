@@ -13,7 +13,17 @@ import { SidebarTrigger } from "@workspace/ui/components/sidebar";
 import Link from "next/link";
 import React from "react";
 
-export const WorkplacePageHeader = ({ title, children }: { title: string; children?: React.ReactNode }) => {
+export const WorkplacePageHeader = ({
+  title,
+  children,
+  breadcrumbLinks,
+  rootCrumbs
+}: {
+  title: string;
+  children?: React.ReactNode;
+  breadcrumbLinks?: { href: string; label: string }[];
+  rootCrumbs?: { href?: string; label: string }[];
+}) => {
   return (
     <section className="px-4 py-4 bg-sidebar border-b border-border">
       <hgroup className="w-full flex justify-between">
@@ -21,18 +31,49 @@ export const WorkplacePageHeader = ({ title, children }: { title: string; childr
           <SidebarTrigger />
           <Breadcrumb>
             <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="..">Workplace</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator>/</BreadcrumbSeparator>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="overview">Workplace name</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator>/</BreadcrumbSeparator>
+              {rootCrumbs ? (
+                <>
+                  {rootCrumbs.map((crumb, index) => (
+                    <React.Fragment key={index}>
+                      <BreadcrumbItem>
+                        {crumb.href ? (
+                          <BreadcrumbLink asChild>
+                            <Link href={crumb.href}>{crumb.label}</Link>
+                          </BreadcrumbLink>
+                        ) : (
+                          <BreadcrumbLink>{crumb.label}</BreadcrumbLink>
+                        )}
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator>/</BreadcrumbSeparator>
+                    </React.Fragment>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link href="../">Workplace</Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator>/</BreadcrumbSeparator>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link href="overview">Workplace name</Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator>/</BreadcrumbSeparator>
+                  {breadcrumbLinks?.map((link, index) => (
+                    <React.Fragment key={index}>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <Link href={link.href}>{link.label}</Link>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator>/</BreadcrumbSeparator>
+                    </React.Fragment>
+                  ))}
+                </>
+              )}
               <BreadcrumbItem>
                 <BreadcrumbPage>{title}</BreadcrumbPage>
               </BreadcrumbItem>
