@@ -9,7 +9,6 @@ import { Button } from "@workspace/ui/components/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
 
 import { ProfileDropdown } from "@/shared/components/profile-dropdown";
-import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
 import { SearchDialog } from "./search-dialog";
 const SEGMENT_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
@@ -19,15 +18,28 @@ const SEGMENT_LABELS: Record<string, string> = {
   reports: "Reports",
   settings: "Settings",
   documents: "Documents",
-  payroll: "Payroll"
+  payroll: "Payroll",
+  create: "Create",
+  edit: "Edit",
+  overview: "Overview",
+  workers: "Workers",
+  attendance: "Attendance",
+  budget: "Budget",
+  gallery: "Gallery",
+  timeline: "Timeline"
 };
 
 export function DashboardsHeader() {
   const pathname = usePathname();
-  const isMobile = useIsMobile();
   const segments = pathname.split("/").filter(Boolean);
-  const segment = segments[1] ?? "dashboard";
-  const label = SEGMENT_LABELS[segment] ?? "Dashboard";
+  const orgId = segments[0];
+  const pathSegments = segments.slice(1);
+
+  const crumbs = pathSegments.map((seg, i) => ({
+    label: SEGMENT_LABELS[seg] ?? seg,
+    href: `/${orgId}/${pathSegments.slice(0, i + 1).join("/")}`,
+    isCurrent: i === pathSegments.length - 1
+  }));
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between bg-sidebar px-4">
@@ -36,8 +48,18 @@ export function DashboardsHeader() {
         <SidebarTrigger />
         <Separator orientation="vertical" />
         <span className="text-muted-foreground">Home</span>
-        <IconChevronRight className="h-3 w-3 text-muted-foreground" />
-        <span className="font-medium text-foreground">{label}</span>
+        {crumbs.map((crumb) => (
+          <span key={crumb.href} className="flex items-center gap-1.5">
+            <IconChevronRight className="h-3 w-3 text-muted-foreground" />
+            {crumb.isCurrent ? (
+              <span className="font-medium text-foreground">{crumb.label}</span>
+            ) : (
+              <a href={crumb.href} className="text-muted-foreground hover:text-foreground transition-colors">
+                {crumb.label}
+              </a>
+            )}
+          </span>
+        ))}
       </nav>
 
       {/* Actions */}

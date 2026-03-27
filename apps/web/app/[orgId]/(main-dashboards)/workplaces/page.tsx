@@ -1,19 +1,23 @@
 "use client";
 
 import React from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import {
   IconAdjustments,
   IconBuildingCommunity,
   IconChartBar,
   IconChevronDown,
   IconCircleCheck,
+  IconCopy,
   IconFilter,
   IconLayoutGrid,
   IconList,
   IconPlus,
   IconSearch,
-  IconUsers
+  IconTable,
+  IconUpload,
+  IconUsers,
+  IconBolt
 } from "@tabler/icons-react";
 import { Button } from "@workspace/ui/components/button";
 import { ButtonGroup } from "@workspace/ui/components/button-group";
@@ -26,11 +30,20 @@ import { MOCK_WORKPLACES } from "@/data/mock";
 import { WorkplaceCard } from "./components/workplace-card";
 import { workplaceColumns } from "./components/workplace-columns";
 import { PageHeader } from "../_components/page-header";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@workspace/ui/components/dropdown-menu";
+import Link from "next/link";
 
 export default function WorkplacesPage() {
   const params = useParams();
   const orgId = params.orgId as string;
-
+  const path = usePathname();
   const [viewMode, setViewMode] = React.useState<"list" | "grid">("grid");
   const [searchQuery, setSearchQuery] = React.useState("");
 
@@ -64,13 +77,52 @@ export default function WorkplacesPage() {
         title="Workplaces"
         description="Manage sites, track workers, and monitor activity across all locations">
         <ButtonGroup>
-          <Button size="lg">
-            <IconPlus />
-            Create workplace
+          <Button size="lg" asChild>
+            <Link href={`${path}/create`}>
+              <IconPlus />
+              Create workplace
+            </Link>
           </Button>
-          <Button size="icon-lg">
-            <IconChevronDown />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon-lg">
+                <IconChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-56">
+              <DropdownMenuLabel>More options</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <IconBolt />
+                <div>
+                  <p>Quick create</p>
+                  <p className="text-xs text-muted-foreground">Just a name — fill details later</p>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <IconUpload />
+                <div>
+                  <p>Use template</p>
+                  <p className="text-xs text-muted-foreground">Start from a preset configuration</p>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <IconTable />
+                <div>
+                  <p>Import from CSV</p>
+                  <p className="text-xs text-muted-foreground">Bulk import multiple workplaces</p>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <IconCopy />
+                <div>
+                  <p>Duplicate existing</p>
+                  <p className="text-xs text-muted-foreground">Copy settings from a workplace</p>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </ButtonGroup>
       </PageHeader>
 
