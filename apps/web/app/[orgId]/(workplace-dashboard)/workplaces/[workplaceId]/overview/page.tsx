@@ -1,5 +1,5 @@
 import { WorkplacePageHeader } from "../_components/workplace-page-header";
-import { IconEdit, IconMapPin, IconPointFilled, IconUpload, IconUserPlus } from "@tabler/icons-react";
+import { IconMapPin, IconPointFilled, IconUpload, IconUserPlus } from "@tabler/icons-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Separator } from "@workspace/ui/components/separator";
@@ -8,6 +8,7 @@ import { AssignedWorkers } from "../_components/assigned-workers";
 import { RecentImages } from "../_components/recent-images";
 import { SiteMap } from "../_components/site-map";
 import { CostTracking } from "../_components/cost-tracking";
+import { EditSiteDialog } from "../_components/edit-site-dialog";
 const OverviewPage = () => {
   return (
     <section className="h-full">
@@ -31,10 +32,7 @@ const OverviewPage = () => {
             </div>
           </hgroup>
           <div className="flex gap-3 items-center">
-            <Button variant={"outline"} size={"lg"}>
-              <IconEdit />
-              Edit details
-            </Button>
+            <EditSiteDialog />
             <Button variant={"outline"} size={"lg"}>
               <IconUserPlus />
               Add workers

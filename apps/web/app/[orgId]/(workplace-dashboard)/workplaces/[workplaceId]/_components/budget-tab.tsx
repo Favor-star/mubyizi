@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { IconBuildingBank, IconDownload, IconPigMoney, IconTrendingDown } from "@tabler/icons-react";
+import { IconBuildingBank, IconCash, IconDownload, IconPigMoney, IconTrendingDown } from "@tabler/icons-react";
 import { DataTable } from "@/shared/components/data-table";
 import { DataTablePagination } from "@/shared/components/data-table-pagination";
 import { useGeneralTable } from "@/hooks/use-general-table";
@@ -9,6 +9,7 @@ import { mockBudgetStats, mockCostBreakdown, mockPaginatedTransactions } from ".
 import { budgetTransactionColumns } from "./budget-columns";
 import { StatCard } from "@/shared/components/stat-card";
 import { Button } from "@workspace/ui/components/button";
+import { RecordExpenseDialog } from "./record-expense-dialog";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -105,10 +106,20 @@ export function BudgetTab() {
       <div>
         <div className="flex gap-2 mb-3 items-center justify-between">
           <h3 className="text-sm font-semibold ">Recent Transactions</h3>
-          <Button variant={"outline"}>
-            <IconDownload />
-            Export
-          </Button>
+          <div className="flex gap-2">
+            <Button variant={"outline"}>
+              <IconDownload />
+              Export
+            </Button>
+            <RecordExpenseDialog
+              trigger={
+                <Button variant="default">
+                  <IconCash size={16} />
+                  Record Expense
+                </Button>
+              }
+            />
+          </div>
         </div>
 
         <DataTable
