@@ -10,6 +10,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/av
 
 import { ProfileDropdown } from "@/shared/components/profile-dropdown";
 import { SearchDialog } from "./search-dialog";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from "@workspace/ui/components/breadcrumb";
+import React from "react";
 const SEGMENT_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
   workplaces: "Workplaces",
@@ -32,9 +41,10 @@ const SEGMENT_LABELS: Record<string, string> = {
 export function DashboardsHeader() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
+  console.log("Segments:", segments);
   const orgId = segments[0];
   const pathSegments = segments.slice(1);
-
+  console.log("Path segments after orgId:", pathSegments);
   const crumbs = pathSegments.map((seg, i) => ({
     label: SEGMENT_LABELS[seg] ?? seg,
     href: `/${orgId}/${pathSegments.slice(0, i + 1).join("/")}`,
@@ -47,19 +57,33 @@ export function DashboardsHeader() {
       <nav className="flex items-center gap-1.5 text-sm">
         <SidebarTrigger />
         <Separator orientation="vertical" />
-        <span className="text-muted-foreground">Home</span>
-        {crumbs.map((crumb) => (
-          <span key={crumb.href} className="flex items-center gap-1.5">
-            <IconChevronRight className="h-3 w-3 text-muted-foreground" />
-            {crumb.isCurrent ? (
-              <span className="font-medium text-foreground">{crumb.label}</span>
-            ) : (
-              <a href={crumb.href} className="text-muted-foreground hover:text-foreground transition-colors">
-                {crumb.label}
-              </a>
-            )}
-          </span>
-        ))}
+        <Breadcrumb className="text-muted-foreground">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                href={`/${orgId}/dashboard`}
+                className="text-muted-foreground hover:text-foreground transition-colors">
+                Home
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            {crumbs.map((crumb) => (
+              <React.Fragment key={crumb.href}>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem key={crumb.href}>
+                  {crumb.isCurrent ? (
+                    <BreadcrumbPage className="font-medium text-foreground">{crumb.label}</BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink
+                      href={crumb.href}
+                      className="text-muted-foreground hover:text-foreground transition-colors">
+                      {crumb.label}
+                    </BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+              </React.Fragment>
+            ))}
+          </BreadcrumbList>
+        </Breadcrumb>
       </nav>
 
       {/* Actions */}

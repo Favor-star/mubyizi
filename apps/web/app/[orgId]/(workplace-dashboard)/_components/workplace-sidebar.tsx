@@ -58,7 +58,7 @@ export const WorkplaceSidebar = () => {
       icon: IconMoneybag
     },
     {
-      label: "Gallery",
+      label: "Gallery & Documents",
       path: `/workplaces/${workplaceId}/gallery`,
       icon: IconPhoto
     },
@@ -117,7 +117,7 @@ export const WorkplaceSidebar = () => {
         <NavUser
           user={{
             name: "Eliab Favor",
-            email: "eliab@favor.gmail.com",
+            email: "eliab.favor@gmail.com",
             avatar: "https://avatars.githubusercontent.com/u/260647568?v=4&size=64"
           }}
         />

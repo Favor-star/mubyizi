@@ -90,7 +90,7 @@ export const attendanceColumns: ColumnDef<AttendanceRow>[] = [
               <span className={`text-xs ${cfg.textClass}`}>{cfg.label}</span>
             </SelectValue>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper">
             {ALL_STATUSES.map((s) => {
               const c = STATUS_CONFIG[s];
               return (

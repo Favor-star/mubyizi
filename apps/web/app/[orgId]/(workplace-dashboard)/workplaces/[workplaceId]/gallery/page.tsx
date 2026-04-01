@@ -1,8 +1,7 @@
 import { GalleryDocumentsView } from "../_components/gallery-documents-view";
 import { WorkplacePageHeader } from "../_components/workplace-page-header";
-import { ButtonGroup } from "@workspace/ui/components/button-group";
-import { Button } from "@workspace/ui/components/button";
-import { IconChevronDown, IconPlus, IconUpload } from "@tabler/icons-react";
+import { AddMediaModal } from "./_components/upload-media-modal";
+import { UploadDocumentModal } from "./_components/upload-document-modal";
 
 const GalleryPage = () => {
   return (
@@ -14,19 +13,8 @@ const GalleryPage = () => {
             <p className="text-muted-foreground text-sm">Media captures and documents for this workplace.</p>
           </hgroup>
           <div className="flex gap-3 items-center">
-            <ButtonGroup>
-              <Button size="lg" variant="default">
-                <IconUpload />
-                Upload document
-              </Button>
-              <Button size="icon-lg" variant="default">
-                <IconChevronDown />
-              </Button>
-            </ButtonGroup>
-            <Button size="lg" variant="outline">
-              <IconPlus />
-              Add media
-            </Button>
+            <AddMediaModal />
+            <UploadDocumentModal />
           </div>
         </section>
       </WorkplacePageHeader>

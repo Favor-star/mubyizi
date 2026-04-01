@@ -19,7 +19,8 @@ import {
   IconHelp,
   IconClockCheck,
   IconFileText,
-  IconReportMoney
+  IconReportMoney,
+  IconHeartHandshake
 } from "@tabler/icons-react";
 import { NavMain } from "../../_components/nav-main";
 import { NavSecondary } from "../../_components/nav-secondary";
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
   { path: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
   { path: "/attendance", label: "Attendance", icon: IconClockCheck },
   { path: "/documents", label: "Documents", icon: IconFileText },
+  { path: "/approvals", label: "Approvals", icon: IconHeartHandshake },
   { path: "/workplaces", label: "Workplaces", icon: IconBuildingCommunity },
   { path: "/workforce", label: "Workforce", icon: IconUsers },
   { path: "/payroll", label: "Payroll", icon: IconReportMoney },

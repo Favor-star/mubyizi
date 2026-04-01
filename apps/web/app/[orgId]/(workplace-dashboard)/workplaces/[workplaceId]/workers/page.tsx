@@ -1,9 +1,9 @@
 import { WorkplacePageHeader } from "../_components/workplace-page-header";
 import { WorkersTab } from "../_components/workers-tab";
 import { Button } from "@workspace/ui/components/button";
-import { IconChevronDown, IconUpload, IconUserPlus } from "@tabler/icons-react";
+import { IconChevronDown, IconUpload } from "@tabler/icons-react";
 import { ButtonGroup } from "@workspace/ui/components/button-group";
-import { DialogWrapper } from "@/shared/components/dialog-wrapper";
+import { AddWorkersModal } from "./_components/add-workers-action";
 
 const WorkersPage = () => {
   return (
@@ -24,17 +24,7 @@ const WorkersPage = () => {
                 <IconChevronDown />
               </Button>
             </ButtonGroup>
-            <DialogWrapper
-              trigger={
-                <Button variant={"default"} size={"lg"}>
-                  <IconUserPlus />
-                  Add Worker
-                </Button>
-              }
-              title="Add Worker"
-              description="Enter worker details to add them to the project.">
-              <p className="w-screen-xl">Worker details form goes here.</p>
-            </DialogWrapper>
+            <AddWorkersModal />
           </div>
         </section>
       </WorkplacePageHeader>

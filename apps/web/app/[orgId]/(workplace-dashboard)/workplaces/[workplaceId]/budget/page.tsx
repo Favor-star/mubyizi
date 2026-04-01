@@ -1,8 +1,9 @@
 import { Button } from "@workspace/ui/components/button";
 import { BudgetTab } from "../_components/budget-tab";
 import { WorkplacePageHeader } from "../_components/workplace-page-header";
-import { IconDownload, IconEdit, IconPlus } from "@tabler/icons-react";
+import { IconCash, IconDownload, IconEdit, IconPlus } from "@tabler/icons-react";
 import { Separator } from "@workspace/ui/components/separator";
+import { RecordExpenseDialog } from "../_components/record-expense-dialog";
 
 const BudgetPage = () => {
   return (
@@ -20,15 +21,19 @@ const BudgetPage = () => {
               <IconEdit strokeWidth={1.5} />
               Edit details
             </Button>
-            <Button size={"lg"} variant={"outline"}>
-              <IconPlus strokeWidth={1.5} />
-              New Expense
-            </Button>
-            <Separator orientation="vertical" />
-            <Button size={"lg"}>
+            <Button variant={"outline"} size={"lg"}>
               <IconDownload strokeWidth={1.5} />
               Export
             </Button>
+            <Separator orientation="vertical" />
+            <RecordExpenseDialog
+              trigger={
+                <Button size={"lg"}>
+                  <IconCash strokeWidth={1.5} />
+                  New Expense
+                </Button>
+              }
+            />
           </div>
         </section>
       </WorkplacePageHeader>

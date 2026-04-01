@@ -13,7 +13,12 @@ const nextConfig = {
         hostname: "picsum.photos",
         pathname: "/**"
       },
-      new URL("https://avatar.vercel.sh/**")
+      new URL("https://avatar.vercel.sh/**"),
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        pathname: "/**"
+      }
     ]
   }
 };

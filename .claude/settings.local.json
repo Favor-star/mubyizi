@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(cd C:\\\\Users\\\\EliabFavorIRANKOMEJE\\\\REPOS\\\\mubyizi\\\\apps\\\\api && pnpm add cloudinary qrcode xlsx 2>&1)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebSearch",
+      "Bash(ls -la /c/Users/EliabFavorIRANKOMEJE/repos/mubyizi/apps/web/app/[orgId]/\\\\\\(main-dashboards\\\\\\)/documents/)",
+      "Bash(find /c/Users/EliabFavorIRANKOMEJE/repos/mubyizi/apps/web/app/[orgId]/\\\\\\(main-dashboards\\\\\\)/dashboard/components -type f -name \"*.tsx\")",
+      "Bash(xargs ls:*)",
+      "Bash(ls -la \"/c/Users/EliabFavorIRANKOMEJE/repos/mubyizi/apps/web/app/\\\\[orgId\\\\]/\\(main-dashboards\\)/\")",
+      "Bash(git diff:*)",
+      "Bash(ls:*)"
     ]
   }
 }
